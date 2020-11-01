@@ -1,3 +1,5 @@
+import java.util.concurrent.Semaphore;
+
 public class B3_P1 {
     public class Control {
 
@@ -7,6 +9,20 @@ public class B3_P1 {
 
     public class Hilo implements Runnable {
         private int iId;
+        private Semaphore oSemaforo;
+
+        public Hilo(Semaphore oSemaforo, int iId) {
+            setoSemaforo(oSemaforo);
+            setiId(iId);
+        }
+
+        public Semaphore getoSemaforo() {
+            return oSemaforo;
+        }
+
+        public void setoSemaforo(Semaphore oSemaforo) {
+            this.oSemaforo = oSemaforo;
+        }
 
         public int getiId() {
             return iId;
