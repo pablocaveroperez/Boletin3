@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 public class B3_P1 {
@@ -16,7 +17,15 @@ public class B3_P1 {
 
     final Control control = new Control();
 
-    public class Hilo implements Runnable {
+    public class HiloCoche implements Runnable {
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    public class HiloPasajero implements Runnable {
         private int iId;
         private Semaphore oSemaforo;
 
@@ -48,7 +57,8 @@ public class B3_P1 {
     }
 
     private void executeMultiThreading() {
-
+        ArrayList<Thread> listaThreads = new ArrayList<Thread>();
+        ArrayList<>
     }
 
     public static void main(String[] args) {
