@@ -2,7 +2,16 @@ import java.util.concurrent.Semaphore;
 
 public class B3_P1 {
     public class Control {
+        private final byte bNUM_PASAJEROS = 15;
+        private final byte bNUM_COCHES = 3;
 
+        public byte getbNUM_PASAJEROS() {
+            return bNUM_PASAJEROS;
+        }
+
+        public byte getbNUM_COCHES() {
+            return bNUM_COCHES;
+        }
     }
 
     final Control control = new Control();
