@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 public class B3_P1 {
@@ -31,19 +32,28 @@ public class B3_P1 {
         public byte getbNUM_COCHES() {
             return bNUM_COCHES;
         }
+
+        public byte rand() {
+            Random r = new Random();
+            return (byte) (1 + r.nextInt(5 - 1 + 1));
+        }
     }
 
     final Control control = new Control();
 
     public class HiloCoche implements Runnable {
-        private int iId;
+        private byte bId;
 
-        public int getiId() {
-            return iId;
+        public HiloCoche(byte bId) {
+            setbId(bId);
         }
 
-        public void setiId(int iId) {
-            this.iId = iId;
+        public byte getbId() {
+            return bId;
+        }
+
+        public void setbId(byte bId) {
+            this.bId = bId;
         }
 
         @Override
@@ -53,29 +63,49 @@ public class B3_P1 {
     }
 
     public class HiloPasajero implements Runnable {
-        private int iId;
+        private byte bId;
+        private byte bTimeToRollerCoaster;
 
-        public HiloPasajero(int iId) {
-            setiId(iId);
+        public HiloPasajero(byte bId) {
+            setbId(bId);
         }
 
-        public int getiId() {
-            return iId;
+        public byte getbId() {
+            return bId;
         }
 
-        public void setiId(int iId) {
-            this.iId = iId;
+        public void setbId(byte bId) {
+            this.bId = bId;
+        }
+
+        public byte getbTimeToRollerCoaster() {
+            return bTimeToRollerCoaster;
+        }
+
+        public void setbTimeToRollerCoaster(byte bTimeToRollerCoaster) {
+            this.bTimeToRollerCoaster = bTimeToRollerCoaster;
         }
 
         @Override
         public synchronized void run() {
-
+            setbTimeToRollerCoaster(control.rand());
+            System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster());
         }
     }
 
     private void executeMultiThreading() {
-        ArrayList<Thread> listaThreads = new ArrayList<Thread>();
-        ArrayList<>
+        ArrayList<Thread> listaPasajeros = new ArrayList<Thread>();
+        ArrayList<Thread> listaCoches = new ArrayList<Thread>();
+
+        // CREANDO LOS HILOS DE LOS PASAJEROS
+        for (byte i = 0; i < control.getbNUM_PASAJEROS(); i++) {
+            listaPasajeros.add(new Thread(new HiloPasajero(i)));
+        }
+
+        // CREANDO LOS HILOS DE LOS COCHES
+        for (byte i = 0; i < control.getbNUM_COCHES(); i++) {
+            listaCoches.add(new Thread(new HiloCoche(i)));
+        }
     }
 
     public static void main(String[] args) {
