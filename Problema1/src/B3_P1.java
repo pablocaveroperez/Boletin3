@@ -8,6 +8,24 @@ public class B3_P1 {
         private final byte bNUM_COCHES = 3;
         private Semaphore oSemaforoCoches;
         private Semaphore oSemaforoPasajeros;
+        private ArrayList<HiloPasajero> listaPasajeros = new ArrayList<HiloPasajero>();
+        private ArrayList<HiloCoche> listaCoches = new ArrayList<HiloCoche>();
+
+        public ArrayList<HiloCoche> getListaCoches() {
+            return listaCoches;
+        }
+
+        public ArrayList<HiloPasajero> getListaPasajeros() {
+            return listaPasajeros;
+        }
+
+        public void setListaCoches(ArrayList<HiloCoche> listaCoches) {
+            this.listaCoches = listaCoches;
+        }
+
+        public void setListaPasajeros(ArrayList<HiloPasajero> listaPasajeros) {
+            this.listaPasajeros = listaPasajeros;
+        }
 
         public Semaphore getoSemaforoCoches() {
             return oSemaforoCoches;
@@ -37,12 +55,33 @@ public class B3_P1 {
             Random r = new Random();
             return (byte) (1 + r.nextInt(5 - 1 + 1));
         }
+
+        public boolean hayCochesLibres() {
+            boolean bResultado = false;
+            byte bContador = 0;
+
+            while (!bResultado || bContador < bNUM_COCHES) {
+                bResultado = listaCoches.get(bContador).isbEstaLibre();
+                bContador++;
+            }
+            return bResultado;
+        }
+
     }
 
     final Control control = new Control();
 
     public class HiloCoche implements Runnable {
         private byte bId;
+        private boolean bEstaLibre = true;
+
+        public boolean isbEstaLibre() {
+            return bEstaLibre;
+        }
+
+        public void setbEstaLibre(boolean bEstaLibre) {
+            this.bEstaLibre = bEstaLibre;
+        }
 
         public HiloCoche(byte bId) {
             setbId(bId);
@@ -87,37 +126,56 @@ public class B3_P1 {
         }
 
         @Override
-        public synchronized void run() {
-            setbTimeToRollerCoaster(control.rand());
-            System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster());
+        public void run() {
+            do {
+                setbTimeToRollerCoaster(control.rand());
+                System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster() + " segundos.");
+
+                try {
+                    if (control.hayCochesLibres()){
+                        control.oSemaforoCoches.acquire();
+                        System.out.println("Visitante " + getbId() + " se ha montado en un coche de la atraccion.");
+                    }
+
+
+
+
+
+
+
+
+
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }while (true);
         }
     }
 
     private void executeMultiThreading() {
-        ArrayList<HiloPasajero> listaPasajeros = new ArrayList<HiloPasajero>();
-        ArrayList<HiloCoche> listaCoches = new ArrayList<HiloCoche>();
-
         ArrayList<Thread> threadsPasajeros = new ArrayList<Thread>();
         ArrayList<Thread> threadsCoches = new ArrayList<Thread>();
 
         // CREANDO LOS HILOS DE LOS PASAJEROS
         for (byte i = 0; i < control.getbNUM_PASAJEROS(); i++) {
-            listaPasajeros.add(new HiloPasajero(i));
+            control.listaPasajeros.add(new HiloPasajero(i));
         }
 
         // AÑADIENDO LOS HILOS DE PASAJEROS A THREADS PASAJEROS
         for (int i = 0; i < control.getbNUM_PASAJEROS(); i++) {
-            threadsPasajeros.add(new Thread(listaPasajeros.get(i)));
+            threadsPasajeros.add(new Thread(control.listaPasajeros.get(i)));
         }
 
         // CREANDO LOS HILOS DE LOS COCHES
         for (byte i = 0; i < control.getbNUM_COCHES(); i++) {
-            listaCoches.add(new HiloCoche(i));
+            control.listaCoches.add(new HiloCoche(i));
         }
 
         // AÑADIENDO LOS HILOS DE COCHES A THREADS COCHES
         for (int i = 0; i < control.getbNUM_COCHES(); i++) {
-            threadsCoches.add(new Thread(listaCoches.get(i)));
+            threadsCoches.add(new Thread(control.listaCoches.get(i)));
         }
     }
 
