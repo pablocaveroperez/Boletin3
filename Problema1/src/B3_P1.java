@@ -60,7 +60,7 @@ public class B3_P1 {
             boolean bResultado = false;
             byte bContador = 0;
 
-            while (!bResultado || bContador < bNUM_COCHES) {
+            while (!bResultado && bContador < bNUM_COCHES) {
                 if (listaCoches.get(bContador).isbEstaLibre())
                     bResultado = true;
                 else
@@ -73,7 +73,7 @@ public class B3_P1 {
             boolean bResultado = false;
             byte bContador = 0;
 
-            while (!bResultado || bContador < bNUM_COCHES) {
+            while (!bResultado && bContador < bNUM_COCHES) {
                 if (listaCoches.get(bContador).isbEstaLibre())
                     bResultado = true;
                 else
@@ -114,13 +114,24 @@ public class B3_P1 {
 
         @Override
         public void run() {
+            do {
 
+            }while(true);
         }
     }
 
     public class HiloPasajero implements Runnable {
         private byte bId;
         private byte bTimeToRollerCoaster;
+        private boolean bListo = false;
+
+        public boolean isbListo() {
+            return bListo;
+        }
+
+        public void setbListo(boolean bListo) {
+            this.bListo = bListo;
+        }
 
         public HiloPasajero(byte bId) {
             setbId(bId);
@@ -145,25 +156,22 @@ public class B3_P1 {
         @Override
         public void run() {
             setbTimeToRollerCoaster(control.rand());
+            try {
+                Thread.sleep(getbTimeToRollerCoaster()*1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             do {
-                System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster() + " segundos.");
-
                 try {
+
+                    System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster() + " segundos.");
+                    setbListo(true);
+                    control.oSemaforoCoches.acquire();
                     if (control.hayCochesLibres()){
-                        control.oSemaforoCoches.acquire();
                         control.ocuparCoche();
                         System.out.println("Visitante " + getbId() + " se ha montado en un coche de la atraccion.");
+
                     }
-
-
-
-
-
-
-
-
-
-
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -196,6 +204,16 @@ public class B3_P1 {
         // AÑADIENDO LOS HILOS DE COCHES A THREADS COCHES
         for (int i = 0; i < control.getbNUM_COCHES(); i++) {
             threadsCoches.add(new Thread(control.listaCoches.get(i)));
+        }
+
+        // START HILOS PASAJEROS
+        for (int i = 0; i < control.getbNUM_PASAJEROS(); i++) {
+            threadsPasajeros.get(i).start();
+        }
+
+        // START HILOS COCHES
+        for (int i = 0; i < control.getbNUM_COCHES(); i++) {
+            threadsCoches.get(i).start();
         }
     }
 
