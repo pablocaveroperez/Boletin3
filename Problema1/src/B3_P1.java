@@ -94,17 +94,30 @@ public class B3_P1 {
     }
 
     private void executeMultiThreading() {
-        ArrayList<Thread> listaPasajeros = new ArrayList<Thread>();
-        ArrayList<Thread> listaCoches = new ArrayList<Thread>();
+        ArrayList<HiloPasajero> listaPasajeros = new ArrayList<HiloPasajero>();
+        ArrayList<HiloCoche> listaCoches = new ArrayList<HiloCoche>();
+
+        ArrayList<Thread> threadsPasajeros = new ArrayList<Thread>();
+        ArrayList<Thread> threadsCoches = new ArrayList<Thread>();
 
         // CREANDO LOS HILOS DE LOS PASAJEROS
         for (byte i = 0; i < control.getbNUM_PASAJEROS(); i++) {
-            listaPasajeros.add(new Thread(new HiloPasajero(i)));
+            listaPasajeros.add(new HiloPasajero(i));
+        }
+
+        // AÑADIENDO LOS HILOS DE PASAJEROS A THREADS PASAJEROS
+        for (int i = 0; i < control.getbNUM_PASAJEROS(); i++) {
+            threadsPasajeros.add(new Thread(listaPasajeros.get(i)));
         }
 
         // CREANDO LOS HILOS DE LOS COCHES
         for (byte i = 0; i < control.getbNUM_COCHES(); i++) {
-            listaCoches.add(new Thread(new HiloCoche(i)));
+            listaCoches.add(new HiloCoche(i));
+        }
+
+        // AÑADIENDO LOS HILOS DE COCHES A THREADS COCHES
+        for (int i = 0; i < control.getbNUM_COCHES(); i++) {
+            threadsCoches.add(new Thread(listaCoches.get(i)));
         }
     }
 
@@ -117,5 +130,4 @@ public class B3_P1 {
             System.out.println(e.getMessage());
         }
     }
-
 }
