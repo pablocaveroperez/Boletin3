@@ -61,10 +61,27 @@ public class B3_P1 {
             byte bContador = 0;
 
             while (!bResultado || bContador < bNUM_COCHES) {
-                bResultado = listaCoches.get(bContador).isbEstaLibre();
-                bContador++;
+                if (listaCoches.get(bContador).isbEstaLibre())
+                    bResultado = true;
+                else
+                    bContador++;
             }
             return bResultado;
+        }
+
+        public void ocuparCoche() {
+            boolean bResultado = false;
+            byte bContador = 0;
+
+            while (!bResultado || bContador < bNUM_COCHES) {
+                if (listaCoches.get(bContador).isbEstaLibre())
+                    bResultado = true;
+                else
+                    bContador++;
+            }
+
+            if (bResultado)
+                listaCoches.get(bContador).setbEstaLibre(bResultado);
         }
 
     }
@@ -127,13 +144,14 @@ public class B3_P1 {
 
         @Override
         public void run() {
+            setbTimeToRollerCoaster(control.rand());
             do {
-                setbTimeToRollerCoaster(control.rand());
                 System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster() + " segundos.");
 
                 try {
                     if (control.hayCochesLibres()){
                         control.oSemaforoCoches.acquire();
+                        control.ocuparCoche();
                         System.out.println("Visitante " + getbId() + " se ha montado en un coche de la atraccion.");
                     }
 
@@ -157,6 +175,8 @@ public class B3_P1 {
     private void executeMultiThreading() {
         ArrayList<Thread> threadsPasajeros = new ArrayList<Thread>();
         ArrayList<Thread> threadsCoches = new ArrayList<Thread>();
+        control.oSemaforoCoches = new Semaphore(3);
+        control.oSemaforoPasajeros = new Semaphore(1);
 
         // CREANDO LOS HILOS DE LOS PASAJEROS
         for (byte i = 0; i < control.getbNUM_PASAJEROS(); i++) {
