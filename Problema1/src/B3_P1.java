@@ -46,26 +46,47 @@ public class B3_P1 {
 
         public void run() {
             int iTiempo = 1 + control.r.nextInt(1000 * control.bNUM_PASAJEROS);
+
+            /*
+            HACEMOS DORMIR A LOS HILOS SEGUN EL TIEMPO QUE TARDAN EN LLEGAR A LA ATRACCION
+             */
             try {
                 Thread.sleep(iTiempo);
             } catch (InterruptedException e2) {
                 e2.printStackTrace();
             }
+
             control.setIdPasajero(id);
             System.err.println("Pasajero: " + id + " ha llegado a la atraccion en " + iTiempo / 1000 + " segundos.");
+            // LA SIGUIENTE LINEA AÑADE LOS PASAJEROS A LA COLA DE PASAJEROS POR ORDEN DE LLEGADA
             control.colaPasajeros.add(this);
 
+            /*
+            AQUI RESERVAMOS LOS COCHES LIBRES QUE HAYAN DISPONIBLES
+             */
             try {
                 control.oSemaforoCochesLibres.acquire();
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
+
+            /*
+            AQUI SE LIBERAN LOS COCHES QUE HAYA EN USO
+             */
             control.oSemaforoCochesEnUso.release();
+
+            /*
+            AQUI RESERVAMOS LOS COCHES QUE ESTEN EN RECORRIENDO LA ATRACCION
+             */
             try {
                 control.oSemaforoCochesRestantes.acquire();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            /*
+            AQUI RESERVAMOS LOS PASAJEROS QUE ESTEN EN RECORRIENDO LA ATRACCION
+             */
             try {
                 control.oSemaforoPasajerosRestantes.acquire();
             } catch (InterruptedException e) {
