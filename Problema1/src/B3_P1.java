@@ -45,7 +45,7 @@ public class B3_P1 {
         }
 
         public void run() {
-            int iTiempo = 1 + (int) control.r.nextInt(1000 * control.bNUM_PASAJEROS);
+            int iTiempo = 1 + control.r.nextInt(1000 * control.bNUM_PASAJEROS);
             try {
                 Thread.sleep(iTiempo);
             } catch (InterruptedException e2) {
