@@ -1,3 +1,4 @@
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
 import java.util.LinkedList;
@@ -51,7 +52,7 @@ public class B3_P1 {
                 e2.printStackTrace();
             }
             control.setIdPasajero(id);
-            System.err.println(" Visitante " + id + " ha llegado a la atraccion en " + iTiempo / 1000 + " segundos");
+            System.err.println("Visitante " + id + " ha llegado a la atraccion en " + iTiempo / 1000 + " segundos");
             control.colaPasajeros.add(this);
 
             try {
@@ -71,7 +72,7 @@ public class B3_P1 {
                 e.printStackTrace();
             }
 
-            System.out.println(" Visitante " + id + " acaba el trayecto");
+            System.out.println("Visitante " + id + " acaba el trayecto");
         }
     }
 
@@ -84,23 +85,23 @@ public class B3_P1 {
 
         public void run() {
             while (true) {
-                System.out.println(" Coche " + id + " esta listo");
+                System.out.println("Coche: " + id + " esta listo.");
                 control.oSemaforoCochesLibres.release();
                 try {
                     control.oSemaforoCochesEnUso.acquire();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                System.out.println(" Visitante " + control.colaPasajeros.poll().id + " se monta en el coche " + id);
+                System.out.println("Pasajero: " + Objects.requireNonNull(control.colaPasajeros.poll()).id + " se ha montado en el coche: " + id + ".");
 
-                System.out.println(" Coche " + id + " haciendo el recorrido");
+                System.out.println("Coche: " + id + " comenzando el recorrido.");
                 control.oSemaforoCochesRestantes.release();
                 try {
                     Thread.sleep(1 + (int) (1000 * control.bTIEMPO_ATRACCION));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                System.out.println(" Coche " + id + " ha vuelto");
+                System.out.println("Coche: " + id + " ha vuelto.");
                 control.oSemaforoPasajerosRestantes.release();
             }
         }
