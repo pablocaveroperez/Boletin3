@@ -107,12 +107,12 @@ public class B3_P1 {
     }
 
     private void executeMultiThreading() {
-        int x = 0;
+        int iContador = 0;
         for (int i = 0; i < control.bNUM_COCHES; i++)
             new Thread(new Car(i)).start();
         while (true) {
-            new Thread(new Passenger(x)).start();
-            x++;
+            new Thread(new Passenger(iContador)).start();
+            iContador++;
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
