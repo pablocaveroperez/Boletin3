@@ -6,6 +6,11 @@ import java.util.Queue;
 import java.util.Random;
 
 public class B3_P1 {
+
+    /**
+     * La clase Control nos sirve para poder acceder a variables desde cualquier punto de la ejecucion del programa.
+     * Toda variable que necesite ser accedida desde multiples puntos de la ejecucion deberia estar dentro de esta clase.
+     */
     public class Control {
         public final byte bNUM_COCHES = 3;
         public final int bNUM_PASAJEROS = 5, bTIEMPO_ATRACCION = 2;
@@ -150,6 +155,10 @@ public class B3_P1 {
         }
     }
 
+    /**
+     * Este metodo es el que vamos a utilizar para todos los programas de MultiThreading.
+     * Sirve para lanzar los hilos correcpondientes.
+     */
     private void executeMultiThreading() {
         int iContador = 0;
         for (int i = 0; i < control.bNUM_COCHES; i++)
