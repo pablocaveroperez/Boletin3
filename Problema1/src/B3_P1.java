@@ -5,6 +5,10 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
+/**
+ * @author Pablo Cavero Perez
+ * @version 1.0
+ */
 public class B3_P1 {
 
     /**
