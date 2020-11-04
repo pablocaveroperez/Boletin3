@@ -84,6 +84,18 @@ public class B3_P1 {
                 listaCoches.get(bContador).setbEstaLibre(bResultado);
         }
 
+        public boolean hayPasajerosEsperando() {
+            boolean bResultado = false;
+            byte bContador = 0;
+
+            while (!bResultado && bContador < bNUM_PASAJEROS) {
+                if (listaPasajeros.get(bContador).isbListo())
+                    bResultado = true;
+                else
+                    bContador++;
+            }
+            return bResultado;
+        }
     }
 
     final Control control = new Control();
@@ -113,9 +125,11 @@ public class B3_P1 {
         }
 
         @Override
-        public void run() {
+        public synchronized void run() {
             do {
+                if (control.hayPasajerosEsperando()) {
 
+                }
             }while(true);
         }
     }
@@ -123,7 +137,7 @@ public class B3_P1 {
     public class HiloPasajero implements Runnable {
         private byte bId;
         private byte bTimeToRollerCoaster;
-        private boolean bListo = false;
+        private boolean bEsperando = false;
 
         public boolean isbListo() {
             return bListo;
@@ -154,7 +168,7 @@ public class B3_P1 {
         }
 
         @Override
-        public void run() {
+        public synchronized void run() {
             setbTimeToRollerCoaster(control.rand());
             try {
                 Thread.sleep(getbTimeToRollerCoaster()*1000);
@@ -170,7 +184,6 @@ public class B3_P1 {
                     if (control.hayCochesLibres()){
                         control.ocuparCoche();
                         System.out.println("Visitante " + getbId() + " se ha montado en un coche de la atraccion.");
-
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
