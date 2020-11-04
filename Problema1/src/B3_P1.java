@@ -1,4 +1,3 @@
-
 import java.util.concurrent.Semaphore;
 
 import java.util.LinkedList;
@@ -6,7 +5,6 @@ import java.util.Queue;
 import java.util.Random;
 
 public class B3_P1 {
-
     public class Control {
         public final byte bNUM_COCHES = 3;
         public final int bNUM_PASAJEROS = 5, bTIEMPO_ATRACCION = 2;
@@ -38,7 +36,7 @@ public class B3_P1 {
 
     Control control = new Control();
 
-    class Passenger implements Runnable {
+    public class Passenger implements Runnable {
         private int id = 0;
 
         public Passenger(int id) {
@@ -50,7 +48,6 @@ public class B3_P1 {
             try {
                 Thread.sleep(iTiempo);
             } catch (InterruptedException e2) {
-                // TODO Auto-generated catch block
                 e2.printStackTrace();
             }
             control.setIdPasajero(id);
@@ -60,29 +57,25 @@ public class B3_P1 {
             try {
                 control.oSemaforoCochesLibres.acquire();
             } catch (InterruptedException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
             control.oSemaforoCochesEnUso.release();
             try {
                 control.oSemaforoCochesRestantes.acquire();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             try {
                 control.oSemaforoPasajerosRestantes.acquire();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
             System.out.println(" Visitante " + id + " acaba el trayecto");
-
         }
     }
 
-    class Car implements Runnable {
+    public class Car implements Runnable {
         private int id = 0;
 
         public Car(int id) {
@@ -90,15 +83,12 @@ public class B3_P1 {
         }
 
         public void run() {
-
             while (true) {
-
                 System.out.println(" Coche " + id + " esta listo");
                 control.oSemaforoCochesLibres.release();
                 try {
                     control.oSemaforoCochesEnUso.acquire();
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 System.out.println(" Visitante " + control.colaPasajeros.poll().id + " se monta en el coche " + id);
@@ -108,7 +98,6 @@ public class B3_P1 {
                 try {
                     Thread.sleep(1 + (int) (1000 * control.bTIEMPO_ATRACCION));
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 System.out.println(" Coche " + id + " ha vuelto");
@@ -117,17 +106,19 @@ public class B3_P1 {
         }
     }
 
-    private void executeMultiThreading() throws InterruptedException {
+    private void executeMultiThreading() {
         int x = 0;
-        boolean b = true;
         for (int i = 0; i < control.bNUM_COCHES; i++)
             new Thread(new Car(i)).start();
-        while (b) {
+        while (true) {
             new Thread(new Passenger(x)).start();
             x++;
-            Thread.sleep(100);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-
     }
 
     public static void main(String[] args) {
