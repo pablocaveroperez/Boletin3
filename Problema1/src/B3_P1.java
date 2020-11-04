@@ -167,11 +167,12 @@ public class B3_P1 {
         @Override
         public synchronized void run() {
             setbTimeToRollerCoaster(control.rand());
+            System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster() + " segundos.");
 
             do {
                 try {
-                    System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster() + " segundos.");
                     Thread.sleep(getbTimeToRollerCoaster());
+
                     Control.oSemaforoCoches.acquire();
                     control.colaPasajeros.add(this);
                     if (Control.hayCochesLibres()){
