@@ -1,15 +1,35 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 public class B3_P1 {
-    public class Control {
-        private final byte bNUM_PASAJEROS = 15;
-        private final byte bNUM_COCHES = 3;
-        private Semaphore oSemaforoCoches;
-        private Semaphore oSemaforoPasajeros;
-        private ArrayList<HiloPasajero> listaPasajeros = new ArrayList<HiloPasajero>();
-        private ArrayList<HiloCoche> listaCoches = new ArrayList<HiloCoche>();
+    public static class Control {
+        private static final byte bNUM_PASAJEROS = 10;
+        private static final byte bNUM_COCHES = 2;
+        private static Semaphore oSemaforoCoches;
+        private static Semaphore oSemaforoPasajeros;
+        private static ArrayList<HiloPasajero> listaPasajeros = new ArrayList<HiloPasajero>();
+        private static ArrayList<HiloCoche> listaCoches = new ArrayList<HiloCoche>();
+        private volatile static boolean bEstaLibre = true;
+        private Queue<HiloPasajero> colaPasajeros = new LinkedList<HiloPasajero>();
+
+        public Queue<HiloPasajero> getColaPasajeros() {
+            return colaPasajeros;
+        }
+
+        public void setColaPasajeros(Queue<HiloPasajero> colaPasajeros) {
+            this.colaPasajeros = colaPasajeros;
+        }
+
+        public static boolean isbEstaLibre() {
+            return bEstaLibre;
+        }
+
+        public static void setbEstaLibre(boolean bEstaLibre) {
+            Control.bEstaLibre = bEstaLibre;
+        }
 
         public ArrayList<HiloCoche> getListaCoches() {
             return listaCoches;
@@ -20,11 +40,11 @@ public class B3_P1 {
         }
 
         public void setListaCoches(ArrayList<HiloCoche> listaCoches) {
-            this.listaCoches = listaCoches;
+            Control.listaCoches = listaCoches;
         }
 
         public void setListaPasajeros(ArrayList<HiloPasajero> listaPasajeros) {
-            this.listaPasajeros = listaPasajeros;
+            Control.listaPasajeros = listaPasajeros;
         }
 
         public Semaphore getoSemaforoCoches() {
@@ -32,7 +52,7 @@ public class B3_P1 {
         }
 
         public void setoSemaforoCoches(Semaphore oSemaforoCoches) {
-            this.oSemaforoCoches = oSemaforoCoches;
+            Control.oSemaforoCoches = oSemaforoCoches;
         }
 
         public Semaphore getoSemaforoPasajeros() {
@@ -40,7 +60,7 @@ public class B3_P1 {
         }
 
         public void setoSemaforoPasajeros(Semaphore oSemaforoPasajeros) {
-            this.oSemaforoPasajeros = oSemaforoPasajeros;
+            Control.oSemaforoPasajeros = oSemaforoPasajeros;
         }
 
         public byte getbNUM_PASAJEROS() {
@@ -56,12 +76,12 @@ public class B3_P1 {
             return (byte) (1 + r.nextInt(5 - 1 + 1));
         }
 
-        public boolean hayCochesLibres() {
+        public static boolean hayCochesLibres() {
             boolean bResultado = false;
             byte bContador = 0;
 
             while (!bResultado && bContador < bNUM_COCHES) {
-                if (listaCoches.get(bContador).isbEstaLibre())
+                if (isbEstaLibre())
                     bResultado = true;
                 else
                     bContador++;
@@ -69,32 +89,19 @@ public class B3_P1 {
             return bResultado;
         }
 
-        public void ocuparCoche() {
+        public static void ocuparCoche() {
             boolean bResultado = false;
             byte bContador = 0;
 
             while (!bResultado && bContador < bNUM_COCHES) {
-                if (listaCoches.get(bContador).isbEstaLibre())
+                if (isbEstaLibre())
                     bResultado = true;
                 else
                     bContador++;
             }
 
             if (bResultado)
-                listaCoches.get(bContador).setbEstaLibre(bResultado);
-        }
-
-        public boolean hayPasajerosEsperando() {
-            boolean bResultado = false;
-            byte bContador = 0;
-
-            while (!bResultado && bContador < bNUM_PASAJEROS) {
-                if (listaPasajeros.get(bContador).isbListo())
-                    bResultado = true;
-                else
-                    bContador++;
-            }
-            return bResultado;
+                setbEstaLibre(bResultado);
         }
     }
 
@@ -102,15 +109,6 @@ public class B3_P1 {
 
     public class HiloCoche implements Runnable {
         private byte bId;
-        private boolean bEstaLibre = true;
-
-        public boolean isbEstaLibre() {
-            return bEstaLibre;
-        }
-
-        public void setbEstaLibre(boolean bEstaLibre) {
-            this.bEstaLibre = bEstaLibre;
-        }
 
         public HiloCoche(byte bId) {
             setbId(bId);
@@ -127,8 +125,16 @@ public class B3_P1 {
         @Override
         public synchronized void run() {
             do {
-                if (control.hayPasajerosEsperando()) {
-
+                if (control.colaPasajeros.size() > 0) {
+                    try {
+                        Control.oSemaforoPasajeros.acquire();
+                        System.out.println("Coche " + getbId() + " comienza a realizar el recorrido.");
+                        Thread.sleep(5000);
+                        System.out.println("Coche " + getbId() + " ha finalizado el recorrido.");
+                        Control.oSemaforoPasajeros.release();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }while(true);
         }
@@ -137,15 +143,6 @@ public class B3_P1 {
     public class HiloPasajero implements Runnable {
         private byte bId;
         private byte bTimeToRollerCoaster;
-        private boolean bEsperando = false;
-
-        public boolean isbListo() {
-            return bListo;
-        }
-
-        public void setbListo(boolean bListo) {
-            this.bListo = bListo;
-        }
 
         public HiloPasajero(byte bId) {
             setbId(bId);
@@ -170,25 +167,23 @@ public class B3_P1 {
         @Override
         public synchronized void run() {
             setbTimeToRollerCoaster(control.rand());
-            try {
-                Thread.sleep(getbTimeToRollerCoaster()*1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            control.colaPasajeros.add(this);
             do {
                 try {
-
                     System.out.println("Visitante " + getbId() + " llegando a la atracción en " + getbTimeToRollerCoaster() + " segundos.");
-                    setbListo(true);
-                    control.oSemaforoCoches.acquire();
-                    if (control.hayCochesLibres()){
-                        control.ocuparCoche();
+                    Thread.sleep(getbTimeToRollerCoaster());
+                    Control.oSemaforoCoches.acquire();
+                    if (Control.hayCochesLibres()){
                         System.out.println("Visitante " + getbId() + " se ha montado en un coche de la atraccion.");
+                        Thread.sleep(6000);
+                        System.out.println("Visitante " + getbId() + " sale de la atracción.");
+                        control.getoSemaforoCoches().release();
+                        control.colaPasajeros.poll();
+                        break;
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
             }while (true);
         }
     }
@@ -196,27 +191,27 @@ public class B3_P1 {
     private void executeMultiThreading() {
         ArrayList<Thread> threadsPasajeros = new ArrayList<Thread>();
         ArrayList<Thread> threadsCoches = new ArrayList<Thread>();
-        control.oSemaforoCoches = new Semaphore(3);
-        control.oSemaforoPasajeros = new Semaphore(1);
+        Control.oSemaforoCoches = new Semaphore(2);
+        Control.oSemaforoPasajeros = new Semaphore(2);
 
         // CREANDO LOS HILOS DE LOS PASAJEROS
         for (byte i = 0; i < control.getbNUM_PASAJEROS(); i++) {
-            control.listaPasajeros.add(new HiloPasajero(i));
+            Control.listaPasajeros.add(new HiloPasajero(i));
         }
 
         // AÑADIENDO LOS HILOS DE PASAJEROS A THREADS PASAJEROS
         for (int i = 0; i < control.getbNUM_PASAJEROS(); i++) {
-            threadsPasajeros.add(new Thread(control.listaPasajeros.get(i)));
+            threadsPasajeros.add(new Thread(Control.listaPasajeros.get(i)));
         }
 
         // CREANDO LOS HILOS DE LOS COCHES
         for (byte i = 0; i < control.getbNUM_COCHES(); i++) {
-            control.listaCoches.add(new HiloCoche(i));
+            Control.listaCoches.add(new HiloCoche(i));
         }
 
         // AÑADIENDO LOS HILOS DE COCHES A THREADS COCHES
         for (int i = 0; i < control.getbNUM_COCHES(); i++) {
-            threadsCoches.add(new Thread(control.listaCoches.get(i)));
+            threadsCoches.add(new Thread(Control.listaCoches.get(i)));
         }
 
         // START HILOS PASAJEROS
