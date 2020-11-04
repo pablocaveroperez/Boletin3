@@ -107,22 +107,44 @@ public class B3_P1 {
         public void run() {
             while (true) {
                 System.out.println("Coche: " + id + " esta listo.");
+
+                /*
+                AQUI SE LIBERAN UN ESPACIO DEL SEMAFORO POR CADA COCHE
+                 */
                 control.oSemaforoCochesLibres.release();
+
+                /*
+                AQUI SE RESERVAN LOS COCHES EN USO
+                 */
                 try {
                     control.oSemaforoCochesEnUso.acquire();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
+                // LA SIGUIENTE LINEA, APARTE DE IMPRIMIR, ELIMINA AL PRIMERO DE LA COLA DE PAJEROS A NO SER QUE SEA NULO
                 System.out.println("Pasajero: " + Objects.requireNonNull(control.colaPasajeros.poll()).id + " se ha montado en el coche: " + id + ".");
 
                 System.out.println("Coche: " + id + " comenzando el recorrido.");
+
+                /*
+                AQUI SE RESERVAN LOS COCHES QUE VAN A COMENZAR EL RECORRIDO
+                 */
                 control.oSemaforoCochesRestantes.release();
+
+                /*
+                AQUI SE DUERME EL HILO DEL COCHE SIMULANDO EL TIEMPO QUE TARDA EN RECORRER LA ATRACCION
+                 */
                 try {
                     Thread.sleep(1 + (int) (1000 * control.bTIEMPO_ATRACCION));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 System.out.println("Coche: " + id + " ha vuelto.");
+
+                /*
+                AQUI SE LIBERAN LOS PASAJEROS QUE RESTAN POR TERMINAR EL RECORRIDO
+                 */
                 control.oSemaforoPasajerosRestantes.release();
             }
         }
