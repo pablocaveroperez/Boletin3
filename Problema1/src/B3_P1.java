@@ -52,7 +52,7 @@ public class B3_P1 {
                 e2.printStackTrace();
             }
             control.setIdPasajero(id);
-            System.err.println("Visitante " + id + " ha llegado a la atraccion en " + iTiempo / 1000 + " segundos");
+            System.err.println("Visitante: " + id + " ha llegado a la atraccion en " + iTiempo / 1000 + " segundos.");
             control.colaPasajeros.add(this);
 
             try {
@@ -72,7 +72,7 @@ public class B3_P1 {
                 e.printStackTrace();
             }
 
-            System.out.println("Visitante " + id + " acaba el trayecto");
+            System.out.println("Visitante: " + id + " ha terminado el trayecto.");
         }
     }
 
