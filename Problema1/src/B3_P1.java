@@ -16,15 +16,17 @@ public class B3_P1 {
      * Toda variable que necesite ser accedida desde multiples puntos de la ejecucion deberia estar dentro de esta clase.
      */
     public class Control {
-        public final byte bNUM_COCHES = 3;
-        public final int bNUM_PASAJEROS = 5, bTIEMPO_ATRACCION = 2;
         public Semaphore oSemaforoCochesLibres = new Semaphore(0);
         public Semaphore oSemaforoCochesEnUso = new Semaphore(0);
         public Semaphore oSemaforoCochesRestantes = new Semaphore(0);
         public Semaphore oSemaforoPasajerosRestantes = new Semaphore(0);
         public Queue<Passenger> colaPasajeros = new LinkedList<Passenger>();
         public Random r = new Random();
-        public volatile int idCoche = 0, idPasajero = 0;
+        public final byte bNUM_COCHES = 3;
+        public final int bTIEMPO_ATRACCION = 2;
+        public final int bNUM_PASAJEROS = 5;
+        public volatile int idPasajero = 0;
+        public volatile int idCoche = 0;
 
         public synchronized int getIdCoche() {
             return idCoche;
