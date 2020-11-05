@@ -185,7 +185,7 @@ public class B3_P1 {
             B3_P1 b3P1 = new B3_P1();
             b3P1.executeMultiThreading();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
         }
     }
 }
