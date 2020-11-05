@@ -32,6 +32,14 @@ public class B3_EJ1 {
         }
     }
 
+    public class Comensal implements Runnable {
+
+        @Override
+        public void run() {
+
+        }
+    }
+
     /**
      * Este metodo es el que vamos a utilizar para todos los programas de MultiThreading.
      * Sirve para lanzar los hilos correcpondientes.
