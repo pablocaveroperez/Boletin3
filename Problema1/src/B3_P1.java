@@ -16,168 +16,96 @@ public class B3_P1 {
      * Toda variable que necesite ser accedida desde multiples puntos de la ejecucion deberia estar dentro de esta clase.
      */
     public class Control {
-        public Semaphore oSemaforoCochesLibres = new Semaphore(0);
-        public Semaphore oSemaforoCochesEnUso = new Semaphore(0);
-        public Semaphore oSemaforoCochesRestantes = new Semaphore(0);
-        public Semaphore oSemaforoPasajerosRestantes = new Semaphore(0);
-        public Queue<Passenger> colaPasajeros = new LinkedList<Passenger>();
-        public Random r = new Random();
-        public final byte bNUM_COCHES = 3;
-        public final int bTIEMPO_ATRACCION = 2;
-        public final int bNUM_PASAJEROS = 5;
-        public volatile int idPasajero = 0;
-        public volatile int idCoche = 0;
-
-        public synchronized int getIdCoche() {
-            return idCoche;
-        }
-
-        public synchronized void setIdCoche(int idCoche) {
-            this.idCoche = idCoche;
-        }
-
-        public int getIdPasajero() {
-            return idPasajero;
-        }
-
-        public void setIdPasajero(int idPasajero) {
-            this.idPasajero = idPasajero;
-        }
+        public int iCoches = 5;
+        public Semaphore sCoche = new Semaphore(iCoches);
+        public Semaphore sPasajeros = new Semaphore(0);
+        public Queue<Pasajero> colaPasajero = new LinkedList<Pasajero>();
 
     }
 
     Control control = new Control();
 
-    public class Passenger implements Runnable {
-        private int id = 0;
+    public class Coche implements Runnable {
+        private int iId = 0;
 
-        public Passenger(int id) {
-            this.id = id;
+        public Coche(int iId) {
+            this.iId = iId;
         }
 
         public void run() {
-            int iTiempo = 1 + control.r.nextInt(1000 * control.bNUM_PASAJEROS);
 
-            /*
-            HACEMOS DORMIR A LOS HILOS SEGUN EL TIEMPO QUE TARDAN EN LLEGAR A LA ATRACCION
-             */
-            try {
-                Thread.sleep(iTiempo);
-            } catch (InterruptedException e2) {
-                e2.printStackTrace();
-            }
-
-            control.setIdPasajero(id);
-            System.err.println("Pasajero: " + id + " ha llegado a la atraccion en " + iTiempo / 1000 + " segundos.");
-            // LA SIGUIENTE LINEA AÑADE LOS PASAJEROS A LA COLA DE PASAJEROS POR ORDEN DE LLEGADA
-            control.colaPasajeros.add(this);
-
-            /*
-            AQUI RESERVAMOS LOS COCHES LIBRES QUE HAYAN DISPONIBLES
-             */
-            try {
-                control.oSemaforoCochesLibres.acquire();
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
-
-            /*
-            AQUI SE LIBERAN LOS COCHES QUE HAYA EN USO
-             */
-            control.oSemaforoCochesEnUso.release();
-
-            /*
-            AQUI RESERVAMOS LOS COCHES QUE ESTEN EN RECORRIENDO LA ATRACCION
-             */
-            try {
-                control.oSemaforoCochesRestantes.acquire();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            /*
-            AQUI RESERVAMOS LOS PASAJEROS QUE ESTEN EN RECORRIENDO LA ATRACCION
-             */
-            try {
-                control.oSemaforoPasajerosRestantes.acquire();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            System.out.println("Pasajero: " + id + " ha terminado el trayecto.");
-        }
-    }
-
-    public class Car implements Runnable {
-        private int id = 0;
-
-        public Car(int id) {
-            this.id = id;
-        }
-
-        public void run() {
             while (true) {
-                System.out.println("Coche: " + id + " esta listo.");
 
-                /*
-                AQUI SE LIBERAN UN ESPACIO DEL SEMAFORO POR CADA COCHE
-                 */
-                control.oSemaforoCochesLibres.release();
+                System.out.println("El coche " + iId + " esta listo");
 
-                /*
-                AQUI SE RESERVAN LOS COCHES EN USO
-                 */
                 try {
-                    control.oSemaforoCochesEnUso.acquire();
+                    control.sCoche.acquire();
+                    control.sPasajeros.acquire();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                // LA SIGUIENTE LINEA, APARTE DE IMPRIMIR, ELIMINA AL PRIMERO DE LA COLA DE PAJEROS A NO SER QUE SEA NULO
-                System.out.println("Pasajero: " + Objects.requireNonNull(control.colaPasajeros.poll()).id + " se ha montado en el coche: " + id + ".");
+                int iPas = control.colaPasajero.poll().iId;
 
-                System.out.println("Coche: " + id + " comenzando el recorrido.");
+                System.out.println("El pasajero " + iPas + " se monta en el coche " + iId);
 
-                /*
-                AQUI SE RESERVAN LOS COCHES QUE VAN A COMENZAR EL RECORRIDO
-                 */
-                control.oSemaforoCochesRestantes.release();
+                System.out.println("El coche " + iId + " inicia el recorrido");
 
-                /*
-                AQUI SE DUERME EL HILO DEL COCHE SIMULANDO EL TIEMPO QUE TARDA EN RECORRER LA ATRACCION
-                 */
                 try {
-                    Thread.sleep(1 + (int) (1000 * control.bTIEMPO_ATRACCION));
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
+
                     e.printStackTrace();
                 }
-                System.out.println("Coche: " + id + " ha vuelto.");
 
-                /*
-                AQUI SE LIBERAN LOS PASAJEROS QUE RESTAN POR TERMINAR EL RECORRIDO
-                 */
-                control.oSemaforoPasajerosRestantes.release();
+                System.out.println("El coche " + iId + " ha vuelto");
+
+                System.out.println("El pasajero " + iPas + " se baja de la atracción");
+
+                control.sCoche.release();
             }
         }
+
     }
 
-    /**
-     * Este metodo es el que vamos a utilizar para todos los programas de MultiThreading.
-     * Sirve para lanzar los hilos correcpondientes.
-     */
-    private void executeMultiThreading() {
-        int iContador = 0;
-        for (int i = 0; i < control.bNUM_COCHES; i++)
-            new Thread(new Car(i)).start();
-        while (true) {
-            new Thread(new Passenger(iContador)).start();
-            iContador++;
+    public class Pasajero implements Runnable {
+        private int iId = 0;
+
+        public Pasajero(int iId) {
+            this.iId = iId;
+        }
+
+        public void run() {
+            int iLlegada = (int) (Math.random() * 5) + 1;
+
+            System.out.println("El pasajero " + iId + " llega a la cola de la atracción en " + iLlegada + " segundos");
+
             try {
-                Thread.sleep(200);
+                Thread.sleep(iLlegada * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            control.colaPasajero.add(this);
+
+            control.sPasajeros.release();
+
         }
+    }
+
+    private void executeMultiThreading() throws InterruptedException {
+        int iPasajero = 0, i;
+
+        for (i = 0; i < control.iCoches; i++) {
+            new Thread(new Coche(i)).start();
+        }
+
+        while (true) {
+            Thread.sleep(300);
+            new Thread(new Pasajero(iPasajero)).start();
+            iPasajero++;
+        }
+
     }
 
     public static void main(String[] args) {
