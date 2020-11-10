@@ -6,9 +6,9 @@ import java.util.concurrent.Semaphore;
 public class B3_EJ1 {
 
     public class Control {
-        private final int iPlatos = 5;
-        public Semaphore sPlato = new Semaphore(iPlatos);
-        public Semaphore sCliente = new Semaphore(0);
+        private final int NUM_PLATOS = 5;
+        public Semaphore semaforoPlato = new Semaphore(NUM_PLATOS);
+        public Semaphore semaforoCliente = new Semaphore(0);
         public Queue<Comensales> colaComensales = new LinkedList<Comensales>();
     }
 
@@ -28,8 +28,8 @@ public class B3_EJ1 {
                 System.out.println("El plato " + iId + " está listo.");
 
                 try {
-                    control.sPlato.acquire();
-                    control.sCliente.acquire();
+                    control.semaforoPlato.acquire();
+                    control.semaforoCliente.acquire();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -47,7 +47,7 @@ public class B3_EJ1 {
 
                 System.out.println("El cocinero ha repuesto el plato " + iId);
 
-                control.sPlato.release();
+                control.semaforoPlato.release();
             }
         }
     }
@@ -66,7 +66,7 @@ public class B3_EJ1 {
 
             control.colaComensales.add(this);
 
-            control.sCliente.release();
+            control.semaforoCliente.release();
         }
     }
 
@@ -77,7 +77,7 @@ public class B3_EJ1 {
     private void executeMultiThreading() throws InterruptedException {
         int iContador = 0;
 
-        for (int i = 1; i <= control.iPlatos; i++) {
+        for (int i = 1; i <= control.NUM_PLATOS; i++) {
             new Thread(new Cocinero(i)).start();
         }
 
