@@ -1,42 +1,72 @@
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.Semaphore;
+
 public class B3_EJ1 {
 
     public class Control {
-        public final byte bPLATOS_MAX = 5;
-        public volatile int idCocinero = 0;
-        public volatile int idComensal = 0;
-
-        public int getIdCocinero() {
-            return idCocinero;
-        }
-
-        public void setIdCocinero(int idCocinero) {
-            this.idCocinero = idCocinero;
-        }
-
-        public int getIdComensal() {
-            return idComensal;
-        }
-
-        public void setIdComensal(int idComensal) {
-            this.idComensal = idComensal;
-        }
+        private final int iPlatos = 5;
+        public Semaphore sPlato = new Semaphore(iPlatos);
+        public Semaphore sCliente = new Semaphore(0);
+        public Queue<Comensales> colaComensales = new LinkedList<Comensales>();
     }
 
-    Control control = new Control();
+    final Control control = new Control();
 
     public class Cocinero implements Runnable {
+        private int iId;
+
+        public Cocinero(int iId) {
+            this.iId = iId;
+        }
 
         @Override
-        public void run() {
+        public synchronized void run() {
 
+            while (true) {
+                System.out.println("El plato " + iId + " está listo.");
+
+                try {
+                    control.sPlato.acquire();
+                    control.sCliente.acquire();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                int iCliente = Objects.requireNonNull(control.colaComensales.poll()).iId;
+
+                System.out.println("El comensal " + iCliente + " ha cogido el plato " + iId);
+                System.out.println("El plato " + iId + " está vacío");
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                System.out.println("El cocinero ha repuesto el plato " + iId);
+
+                control.sPlato.release();
+            }
         }
     }
 
-    public class Comensal implements Runnable {
+    public class Comensales implements Runnable {
+
+        private int iId = 0;
+
+        public Comensales(int iId) {
+            this.iId = iId;
+        }
 
         @Override
         public void run() {
+            System.out.println("El comensal " + iId + " acaba de llegar a la cola");
 
+            control.colaComensales.add(this);
+
+            control.sCliente.release();
         }
     }
 
@@ -44,25 +74,26 @@ public class B3_EJ1 {
      * Este metodo es el que vamos a utilizar para todos los programas de MultiThreading.
      * Sirve para lanzar los hilos correcpondientes.
      */
-    private void executeMultiThreading() {
+    private void executeMultiThreading() throws InterruptedException {
         int iContador = 0;
 
+        for (int i = 1; i <= control.iPlatos; i++) {
+            new Thread(new Cocinero(i)).start();
+        }
+
         while (true) {
+            Thread.sleep(250);
+            new Thread(new Comensales(iContador)).start();
             iContador++;
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     public static void main(String[] args) {
         try {
-            B3_EJ1 b3EJ1 = new B3_EJ1();
-            b3EJ1.executeMultiThreading();
+            B3_EJ1 b3Ej1 = new B3_EJ1();
+            b3Ej1.executeMultiThreading();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
 }
