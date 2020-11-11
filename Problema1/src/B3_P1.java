@@ -1,29 +1,49 @@
-import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Random;
 
 /**
  * @author Pablo Cavero Perez
  * @version 1.0
  */
 public class B3_P1 {
-
+    private final int NUM_COCHES = 3;
     /**
      * La clase Control nos sirve para poder acceder a variables desde cualquier punto de la ejecucion del programa.
      * Toda variable que necesite ser accedida desde multiples puntos de la ejecucion deberia estar dentro de esta clase.
      */
     public class Control {
-        public int iCoches = 5;
-        public Semaphore sCoche = new Semaphore(iCoches);
-        public Semaphore sPasajeros = new Semaphore(0);
-        public Queue<Pasajero> colaPasajero = new LinkedList<Pasajero>();
+        private Semaphore sCoche = new Semaphore(NUM_COCHES);
+        private Semaphore sPasajeros = new Semaphore(0);
+        private Queue<Pasajero> colaPasajero = new LinkedList<Pasajero>();
 
+        public Semaphore getsCoche() {
+            return sCoche;
+        }
+
+        public void setsCoche(Semaphore sCoche) {
+            this.sCoche = sCoche;
+        }
+
+        public Semaphore getsPasajeros() {
+            return sPasajeros;
+        }
+
+        public void setsPasajeros(Semaphore sPasajeros) {
+            this.sPasajeros = sPasajeros;
+        }
+
+        public Queue<Pasajero> getColaPasajero() {
+            return colaPasajero;
+        }
+
+        public void setColaPasajero(Queue<Pasajero> colaPasajero) {
+            this.colaPasajero = colaPasajero;
+        }
     }
 
-    Control control = new Control();
+    private Control control = new Control();
 
     public class Coche implements Runnable {
         private int iId = 0;
@@ -96,7 +116,7 @@ public class B3_P1 {
     private void executeMultiThreading() throws InterruptedException {
         int iPasajero = 0, i;
 
-        for (i = 0; i < control.iCoches; i++) {
+        for (i = 0; i < NUM_COCHES; i++) {
             new Thread(new Coche(i)).start();
         }
 
