@@ -36,7 +36,7 @@ public class B3_EJ1 {
         }
     }
 
-    final Control control = new Control();
+    private final Control control = new Control();
 
     public class Cocinero implements Runnable {
         private int iId;
