@@ -3,15 +3,39 @@ import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
 public class B3_EJ5 {
+    private final int NUM_ASCENSORES = 4;
 
     public class Control {
-        private final int NUM_ASCENSORES = 4;
         private Semaphore semaforoAscensor = new Semaphore(NUM_ASCENSORES);
         private Semaphore semaforoPlanta = new Semaphore(0);
         private Queue<Planta> colaLlamadasAscensor = new LinkedList<Planta>();
+
+        public Semaphore getSemaforoAscensor() {
+            return semaforoAscensor;
+        }
+
+        public void setSemaforoAscensor(Semaphore semaforoAscensor) {
+            this.semaforoAscensor = semaforoAscensor;
+        }
+
+        public Semaphore getSemaforoPlanta() {
+            return semaforoPlanta;
+        }
+
+        public void setSemaforoPlanta(Semaphore semaforoPlanta) {
+            this.semaforoPlanta = semaforoPlanta;
+        }
+
+        public Queue<Planta> getColaLlamadasAscensor() {
+            return colaLlamadasAscensor;
+        }
+
+        public void setColaLlamadasAscensor(Queue<Planta> colaLlamadasAscensor) {
+            this.colaLlamadasAscensor = colaLlamadasAscensor;
+        }
     }
 
-    final Control control = new Control();
+    private final Control control = new Control();
 
     public class Ascensor implements Runnable {
         private int iId = 0;
@@ -81,7 +105,7 @@ public class B3_EJ5 {
 
     private void executeMultiThreading() throws InterruptedException {
 
-        for (int i = 0; i < control.NUM_ASCENSORES; i++) {
+        for (int i = 0; i < NUM_ASCENSORES; i++) {
             new Thread(new Ascensor(i)).start();
         }
 
