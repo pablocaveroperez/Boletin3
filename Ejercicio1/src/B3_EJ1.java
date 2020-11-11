@@ -4,12 +4,36 @@ import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
 public class B3_EJ1 {
+    private final int NUM_PLATOS = 5;
 
     public class Control {
-        private final int NUM_PLATOS = 5;
-        public Semaphore semaforoPlato = new Semaphore(NUM_PLATOS);
-        public Semaphore semaforoCliente = new Semaphore(0);
-        public Queue<Comensales> colaComensales = new LinkedList<Comensales>();
+        private Semaphore semaforoPlato = new Semaphore(NUM_PLATOS);
+        private Semaphore semaforoCliente = new Semaphore(0);
+        private Queue<Comensales> colaComensales = new LinkedList<Comensales>();
+
+        public Semaphore getSemaforoPlato() {
+            return semaforoPlato;
+        }
+
+        public void setSemaforoPlato(Semaphore semaforoPlato) {
+            this.semaforoPlato = semaforoPlato;
+        }
+
+        public Semaphore getSemaforoCliente() {
+            return semaforoCliente;
+        }
+
+        public void setSemaforoCliente(Semaphore semaforoCliente) {
+            this.semaforoCliente = semaforoCliente;
+        }
+
+        public Queue<Comensales> getColaComensales() {
+            return colaComensales;
+        }
+
+        public void setColaComensales(Queue<Comensales> colaComensales) {
+            this.colaComensales = colaComensales;
+        }
     }
 
     final Control control = new Control();
@@ -77,7 +101,7 @@ public class B3_EJ1 {
     private void executeMultiThreading() throws InterruptedException {
         int iContador = 0;
 
-        for (int i = 1; i <= control.NUM_PLATOS; i++) {
+        for (int i = 1; i <= NUM_PLATOS; i++) {
             new Thread(new Cocinero(i)).start();
         }
 
