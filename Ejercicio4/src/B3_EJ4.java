@@ -62,7 +62,6 @@ public class B3_EJ4 {
                         control.semaforoDentista.acquire();
                         control.semaforoPaciente.acquire();
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
 
@@ -76,7 +75,6 @@ public class B3_EJ4 {
                     try {
                         Thread.sleep((int) (Math.random() * 10) * 1000);
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
 
@@ -117,7 +115,6 @@ public class B3_EJ4 {
                     control.semaforoSillas.acquire();
                     System.out.println("El paciente " + getiId() + " se ha sentado en una silla.");
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 control.colaPacientes.add(this);
