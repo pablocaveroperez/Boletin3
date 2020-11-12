@@ -77,7 +77,7 @@ public class B3_EJ2 {
             System.out.println("El filósofo " + getiId() + " se ha sentado en el parque. No le teme a los \"Bichos\"");
             do {
                 if (palillosAvaliable()) {
-                    System.out.println("El filósofo " + getiId() + " ha cogido los palillos " + iIzquierda + " y " + iDerecha + ", y se dispone a comer.");
+                    System.out.println("El filósofo " + getiId() + " ha cogido los palillos " + iIzquierda + " y " + iDerecha + ", y se dispone a comer. Ha comprobado que no haya \"Bichos\" en el plato");
                     try {
                         Thread.sleep(2000);
 
