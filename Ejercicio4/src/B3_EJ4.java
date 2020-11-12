@@ -8,7 +8,7 @@ public class B3_EJ4 {
     public class Control {
         private Semaphore semaforoSillas = new Semaphore(NUM_SILLAS);
         private Semaphore semaforoPaciente = new Semaphore(0);
-        private Semaphore semaforoDentista = new Semaphore(1);
+        private Semaphore semaforoDentista = new Semaphore(0);
         private Queue<Paciente> colaPacientes = new LinkedList<Paciente>();
 
         public Semaphore getSemaforoSillas() {
@@ -51,40 +51,58 @@ public class B3_EJ4 {
         @Override
         public void run() {
 
-            int idPaciente = 0;
-            Paciente p = new Paciente(idPaciente);
-            System.out.println("Hay " + NUM_SILLAS + " sillas libres");
-            System.out.println("El dentista esta libre.");
-            do {
-                control.semaforoSillas.release();
+            System.out.println("Las " + NUM_SILLAS + " sillas de la consulta están libres.");
 
-                try {
-                    control.semaforoDentista.acquire();
-                    control.semaforoPaciente.acquire();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+
+            while (true) {
+
+                if (control.colaPacientes.size() == 0) {
+                    System.out.println("El dentista está descansando.");
+
+                    try {
+                        control.semaforoDentista.acquire();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+
+                    int iPaciente = control.colaPacientes.poll().getiId();
+
+                    System.out.println("El paciente " + iPaciente + " avisa al dentista para atenderle.");
+                    control.semaforoSillas.release();
+
+                    try {
+                        control.semaforoPaciente.acquire();
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    System.out.println("El dentista atiende al paciente " + iPaciente + ".");
+                    System.out.println("El dentista está tratando a un paciente.");
+                    System.out.println("El paciente " + iPaciente + " deja su silla libre.");
+
+                    try {
+                        Thread.sleep((int) (Math.random() * 10) * 1000);
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (iPaciente % 2 == 0) {
+                        int iNumEmpastes = (int) (1+ (Math.random() * 32));
+
+                        System.out.println("El paciente " + iPaciente + " ha sido atendido y sale del dentista. Con " + iNumEmpastes + " empastes");
+                    }else {
+                        System.out.println("El paciente " + iPaciente + " ha sido atendido. No ha sido bueno, le han castigado. Por que dice que el \"Bicho\" no existe.");
+                    }
+
+
+                    System.out.println("El dentista puede atender a un nuevo paciente.");
                 }
-
-                int iPos = control.colaPacientes.poll().getiId();
-                System.out.println("El dentista ha llamado al paciente " + iPos);
-                System.out.println("El dentista esta ocupado.");
-                System.out.println("La silla ocupada por " + iPos + " esta libre.");
-
-
-                try {
-                    Thread.sleep((int) (Math.random() * 10) * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                System.out.println("El paciente " + iPos + " ha salido de la consulta.");
-                System.out.println("El dentista esta libre de nuevo.");
-
-                control.semaforoDentista.release();
-            } while (true);
-
+            }
         }
-
     }
 
     public class Paciente implements Runnable {
@@ -103,19 +121,24 @@ public class B3_EJ4 {
         }
 
         @Override
-        public synchronized void run() {
-            Dentista dentista = new Dentista();
+        public void run() {
+            System.out.println("El paciente " + getiId() + " entra a la sala de espera.");
             if (control.colaPacientes.size() >= NUM_SILLAS) {
-                System.out.println("El paciente " + getiId() + " se va enfadado, por que la sala de espera estaba llena.");
+                System.out.println("El paciente " + getiId() + " se va enfadado, por que no quedan sillas libres.");
+
             } else {
+
                 try {
                     control.semaforoSillas.acquire();
                     System.out.println("El paciente " + getiId() + " se ha sentado en una silla.");
+                    control.semaforoDentista.release();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
                 control.colaPacientes.add(this);
                 control.semaforoPaciente.release();
+
             }
         }
     }
