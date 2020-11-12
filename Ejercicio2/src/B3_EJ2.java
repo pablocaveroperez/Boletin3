@@ -8,9 +8,6 @@ public class B3_EJ2 {
 
     public class Control {
         private Semaphore[] aSemaforo = new Semaphore[NUM_PALILLOS];
-        private Semaphore semaphoreFilosofo = new Semaphore(0);
-        private Semaphore semaforoPalillo = new Semaphore(2);
-        private Queue<Filosofo> colaFilosofos = new LinkedList<Filosofo>();
 
         public Control() {
             for (int i = 0; i < NUM_PALILLOS; i++)
@@ -24,28 +21,14 @@ public class B3_EJ2 {
         public void setaSemaforo(Semaphore[] aSemaforo) {
             this.aSemaforo = aSemaforo;
         }
-
-        public Semaphore getSemaphoreFilosofo() {
-            return semaphoreFilosofo;
-        }
-
-        public void setSemaphoreFilosofo(Semaphore semaphoreFilosofo) {
-            this.semaphoreFilosofo = semaphoreFilosofo;
-        }
-
-        public Queue<Filosofo> getColaFilosofos() {
-            return colaFilosofos;
-        }
-
-        public void setColaFilosofos(Queue<Filosofo> colaFilosofos) {
-            this.colaFilosofos = colaFilosofos;
-        }
     }
 
     private Control control = new Control();
 
     public class Filosofo implements Runnable {
         private int iId;
+        private int iDerecha;
+        private int iIzquierda;
 
         public Filosofo(int iId) {
             this.iId = iId;
@@ -59,17 +42,63 @@ public class B3_EJ2 {
             this.iId = iId;
         }
 
+        public boolean palillosAvaliable() {
+            boolean bExito = false;
+
+            iIzquierda = getiId();
+            if (iIzquierda == 4)
+                iDerecha = 0;
+            else
+                iDerecha = iIzquierda + 1;
+
+            if (control.aSemaforo[iIzquierda].availablePermits() > 0 && control.aSemaforo[iDerecha].availablePermits() > 0) {
+                bExito = true;
+                try {
+                    control.aSemaforo[iIzquierda].acquire();
+                    control.aSemaforo[iDerecha].acquire();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return bExito;
+        }
+
+        public boolean soltarPalillos() {
+            boolean bExito = false;
+
+            if (control.aSemaforo[iIzquierda].availablePermits() == 0 && control.aSemaforo[iDerecha].availablePermits() == 0) {
+                bExito = true;
+                control.aSemaforo[iIzquierda].release();
+                control.aSemaforo[iDerecha].release();
+            }
+            return bExito;
+        }
+
         @Override
         public synchronized void run() {
             System.out.println("El filósofo " + getiId() + " se ha sentado en el parque. No le teme a los \"Bichos\"");
             do {
-                control.colaFilosofos.add(this);
-                control.semaphoreFilosofo.release();
+                if (palillosAvaliable()) {
+                    System.out.println("El filósofo " + getiId() + " ha cogido los palillos " + iIzquierda + " y " + iDerecha + ", y se dispone a comer.");
+                    try {
+                        Thread.sleep(2000);
+
+                        System.out.println("El filósofo " + getiId() + " ha terminado de comer, y ha soltado los palillos " + iIzquierda + " y " + iDerecha + ". Ahora va a pensar en el \"Bicho\"");
+
+                        soltarPalillos();
+
+                        Thread.sleep(6000);
+                        System.out.println("El filósofo " + getiId() + " ha terminado de pensar en el \"Bicho\"");
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }while (true);
         }
     }
 
-    public class Palillo implements Runnable {
+    /*public class Palillo implements Runnable {
         private int iId;
 
         public Palillo(int iId) {
@@ -139,7 +168,7 @@ public class B3_EJ2 {
                 }
             }while (true);
         }
-    }
+    }*/
 
     /**
      * Este metodo es el que vamos a utilizar para todos los programas de MultiThreading.
@@ -149,10 +178,6 @@ public class B3_EJ2 {
 
         for (int i = 0; i < NUM_ESTUDIANTES; i++)
             new Thread(new Filosofo(i)).start();
-
-        for (int i = 0; i < NUM_PALILLOS; i++)
-            new Thread(new Palillo(i)).start();
-
     }
 
     public static void main(String[] args) {
