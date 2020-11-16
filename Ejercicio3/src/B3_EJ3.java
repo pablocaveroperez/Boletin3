@@ -8,7 +8,6 @@ public class B3_EJ3 {
         private Double dX;
         private Double dY;
         private Double dN;
-        private Double dK;
         private Semaphore semaforoFactorial = new Semaphore(0);
 
         public Semaphore getSemaforoFactorial() {
@@ -43,14 +42,6 @@ public class B3_EJ3 {
             this.dN = dN;
         }
 
-        public Double getdK() {
-            return dK;
-        }
-
-        public void setdK(Double dK) {
-            this.dK = dK;
-        }
-
         public Double factorial(Double dNum) {
             if (dNum == 0 || dNum == 1)
                 return 1d;
@@ -70,11 +61,25 @@ public class B3_EJ3 {
     }
 
     public class P2 implements Runnable{
+        private Double dK;
+
+        public Double getdK() {
+            return dK;
+        }
+
+        public void setdK(Double dK) {
+            this.dK = dK;
+        }
+
+        public P2(Double dK) {
+            setdK(dK);
+        }
+
         @Override
         public void run() {
             try {
                 control.semaforoFactorial.acquire();
-                control.setdY(control.factorial(control.getdK()) * control.factorial(control.getdN() - control.getdK()));
+                control.setdY(control.factorial(getdK()) * control.factorial(control.getdN() - getdK()));
                 Double dResultado = (control.getdX() / control.getdY());
                 System.out.println("El resultado final de la operacion es: " + dResultado);
             } catch (InterruptedException e) {
@@ -84,20 +89,21 @@ public class B3_EJ3 {
     }
 
     private void executeMultiThreading() throws InterruptedException {
+        Double dK;
         do {
             control.setdN((Double) ValidaLibrary.valida("Introduce el valor de N: ", 0, -1,2));
-            control.setdK((Double) ValidaLibrary.valida("Introduce el valor de K: ", 0, control.getdN(), 2));
-        }while (control.getdN() < control.getdK());
+            dK = (Double) ValidaLibrary.valida("Introduce el valor de K: ", 0, control.getdN(), 2);
+        }while (control.getdN() < dK);
 
         new Thread(new P1()).start();
 
-        new Thread(new P2()).start();
+        new Thread(new P2(dK)).start();
     }
 
     public static void main(String[] args) {
 
         try {
-            System.out.println("Urelio. Voy a usar la formula de la wikipedia: factorial(n)/(factorial(k) * factorial(n - k))");
+            System.out.println("Urelio. Voy a usar la formula de la wikipedia: n!/(k! * (n - k)!)");
             B3_EJ3 b3Ej3 = new B3_EJ3();
             b3Ej3.executeMultiThreading();
         } catch (Exception e) {
