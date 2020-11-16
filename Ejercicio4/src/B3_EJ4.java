@@ -122,7 +122,6 @@ public class B3_EJ4 {
 
         @Override
         public void run() {
-            System.out.println("El paciente " + getiId() + " entra a la sala de espera.");
             if (control.colaPacientes.size() >= NUM_SILLAS) {
                 System.out.println("El paciente " + getiId() + " se va enfadado, por que no quedan sillas libres.");
 
