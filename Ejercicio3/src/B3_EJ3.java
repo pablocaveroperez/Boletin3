@@ -97,9 +97,14 @@ public class B3_EJ3 {
 
         control.setdN(dN);
 
-        new Thread(new P1()).start();
+        Thread t1 = new Thread(new P1());
+        t1.start();
 
-        new Thread(new P2(dK)).start();
+        Thread t2 = new Thread(new P2(dK));
+        t2.start();
+
+        t2.join();
+
     }
 
     public static void main(String[] args) {
