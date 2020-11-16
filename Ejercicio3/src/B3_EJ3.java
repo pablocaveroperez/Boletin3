@@ -89,11 +89,13 @@ public class B3_EJ3 {
     }
 
     private void executeMultiThreading() throws InterruptedException {
-        Double dK;
+        Double dK, dN;
         do {
-            control.setdN((Double) ValidaLibrary.valida("Introduce el valor de N: ", 0, -1,2));
+            dN = (Double) ValidaLibrary.valida("Introduce el valor de N: ", 0, -1,2);
             dK = (Double) ValidaLibrary.valida("Introduce el valor de K: ", 0, control.getdN(), 2);
         }while (control.getdN() < dK);
+
+        control.setdN(dN);
 
         new Thread(new P1()).start();
 
