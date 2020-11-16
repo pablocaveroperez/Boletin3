@@ -81,7 +81,7 @@ public class B3_EJ3 {
                 control.semaforoFactorial.acquire();
                 control.setdY(control.factorial(getdK()) * control.factorial(control.getdN() - getdK()));
                 Double dResultado = (control.getdX() / control.getdY());
-                System.out.println("El resultado final de la operacion es: " + dResultado);
+                System.out.println("El resultado final de la operacion es: " + dResultado + "\t Ay mi madre el \"Bicho\".");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -91,9 +91,9 @@ public class B3_EJ3 {
     private void executeMultiThreading() throws InterruptedException {
         Double dK, dN;
         do {
-            dN = (Double) ValidaLibrary.valida("Introduce el valor de N: ", 0, -1,2);
-            dK = (Double) ValidaLibrary.valida("Introduce el valor de K: ", 0, control.getdN(), 2);
-        }while (control.getdN() < dK);
+            dN = (Double) ValidaLibrary.valida("Introduce el valor de N(Debe ser mayor o igual que k): ", 0, -1,2);
+            dK = (Double) ValidaLibrary.valida("Introduce el valor de K(Debe ser mayor o igual que 0 y menor o igual que n): ", 0, dN, 2);
+        }while (dN < dK);
 
         control.setdN(dN);
 
@@ -105,7 +105,7 @@ public class B3_EJ3 {
     public static void main(String[] args) {
 
         try {
-            System.out.println("Urelio. Voy a usar la formula de la wikipedia: n!/(k! * (n - k)!)");
+            System.out.println("Urelio. Voy a usar la formula de la wikipedia: n!/(k! * (n - k)!). I want my ten");
             B3_EJ3 b3Ej3 = new B3_EJ3();
             b3Ej3.executeMultiThreading();
         } catch (Exception e) {
