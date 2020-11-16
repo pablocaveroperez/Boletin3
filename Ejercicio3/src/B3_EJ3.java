@@ -108,7 +108,6 @@ public class B3_EJ3 {
     }
 
     public static void main(String[] args) {
-
         try {
             System.out.println("Urelio. Voy a usar la formula de la wikipedia: n!/(k! * (n - k)!). I want my ten");
             B3_EJ3 b3Ej3 = new B3_EJ3();
