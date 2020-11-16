@@ -46,7 +46,7 @@ public class B3_EJ3 {
             if (dNum == 0 || dNum == 1)
                 return 1d;
             else
-                return dNum * factorial(dNum -1);
+                return dNum * factorial(dNum - 1);
         }
     }
 
@@ -60,7 +60,7 @@ public class B3_EJ3 {
         }
     }
 
-    public class P2 implements Runnable{
+    public class P2 implements Runnable {
         private Double dK;
 
         public Double getdK() {
