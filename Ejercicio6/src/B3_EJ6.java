@@ -42,9 +42,11 @@ public class B3_EJ6 {
      */
     public class DamAir implements Runnable {
         private int iTipo;
+        private int iId;
 
-        public DamAir (int iTipo) {
+        public DamAir (int iTipo, int iId) {
             setiTipo(iTipo);
+            setiId(iId);
         }
 
         public int getiTipo() {
@@ -53,6 +55,14 @@ public class B3_EJ6 {
 
         public void setiTipo(int iTipo) {
             this.iTipo = iTipo;
+        }
+
+        public int getiId() {
+            return iId;
+        }
+
+        public void setiId(int iId) {
+            this.iId = iId;
         }
 
         @Override
@@ -71,12 +81,12 @@ public class B3_EJ6 {
 
     private void executeMultiThreading() throws InterruptedException {
         int iContador = 0;
-
         new Thread(new Aurelinex()).start();
 
         while (true) {
-            Thread.sleep(500);
-            new Thread(new DamAir(iContador)).start();
+            Thread.sleep(250);
+            int i = (int) (Math.random() * 3);
+            new Thread(new DamAir(i, iContador)).start();
             iContador++;
         }
     }
