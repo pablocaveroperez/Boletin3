@@ -1,42 +1,48 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
 public class B3_EJ6 {
     public class Control {
-        private Semaphore semaforoNormales = new Semaphore(0);
-        private Semaphore semaforoPremium = new Semaphore(0);
-        private Queue<Thread> colaAviones = new LinkedList<Thread>();
+        private Semaphore semaforoDespegues = new Semaphore(0);
+        private Queue<DamAir> colaAviones = new LinkedList<DamAir>();
 
-        public Semaphore getSemaforoNormales() {
-            return semaforoNormales;
+        public Semaphore getSemaforoDespegues() {
+            return semaforoDespegues;
         }
 
-        public void setSemaforoNormales(Semaphore semaforoNormales) {
-            this.semaforoNormales = semaforoNormales;
+        public void setSemaforoDespegues(Semaphore semaforoDespegues) {
+            this.semaforoDespegues = semaforoDespegues;
         }
 
-        public Semaphore getSemaforoPremium() {
-            return semaforoPremium;
-        }
-
-        public void setSemaforoPremium(Semaphore semaforoPremium) {
-            this.semaforoPremium = semaforoPremium;
-        }
-
-        public Queue<Thread> getColaAviones() {
+        public Queue<DamAir> getColaAviones() {
             return colaAviones;
         }
 
-        public void setColaAviones(Queue<Thread> colaAviones) {
+        public void setColaAviones(Queue<DamAir> colaAviones) {
             this.colaAviones = colaAviones;
+        }
+
+        public boolean hayPremiunEnCola() {
+            boolean bExito = false;
+            int iContador = 0;
+            DamAir[] aviones = (DamAir[]) colaAviones.toArray();
+
+            while (iContador < aviones.length && !bExito) {
+                if (aviones[iContador].getiTipo() == 3)
+                    bExito = true;
+                iContador++;
+            }
+
+            return bExito;
         }
     }
 
     private Control control = new Control();
 
     /**
-     * La variable iTipo que esta en la clase {@link #DamAir(int)}, indica si el Avion es normal o si ees premium
+     * La variable iTipo que esta en la clase {@link #DamAir}, indica si el Avion es normal o si ees premium
      * Los aviones que sean normales seran todos aquellos que no sean el numero 3, el valor de esta variable se
      * genera aleatoriamente entre 0 y 3.
      */
@@ -66,16 +72,45 @@ public class B3_EJ6 {
         }
 
         @Override
-        public void run() {
+        public synchronized void run() {
+            if (getiTipo() == 3)
+                System.out.println("El avion Premium " + getiId() + " ha llegado a la pista.");
+            else
+                System.out.println("El avion Normal " + getiId() + " ha llegado a la pista.");
+            try {
+                control.colaAviones.add(this);
+                control.semaforoDespegues.acquire();
 
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    /**
+     * la clase {@link #Aurelinex} es el aeropuerto, y se encarga de controlar los despegues de los aviones
+     */
     public class Aurelinex implements Runnable {
 
-        @Override
-        public void run() {
+        public Aurelinex() {
 
+        }
+
+        @Override
+        public synchronized void run() {
+            do {
+                System.out.println("El aeropuerto esta preparado para que los aviones empiezen a despegar");
+                control.semaforoDespegues.release();
+                DamAir iDespegue = control.colaAviones.poll();
+                Integer iNextInQueue = null;
+                if (control.colaAviones.peek() != null) {
+                    iNextInQueue = control.colaAviones.peek().getiTipo();
+                }
+
+                if (iDespegue.getiTipo() == 3 && !control.hayPremiunEnCola()) {
+
+                }
+            }while(true);
         }
     }
 
@@ -84,7 +119,7 @@ public class B3_EJ6 {
         new Thread(new Aurelinex()).start();
 
         while (true) {
-            Thread.sleep(250);
+            Thread.sleep(5000);
             int i = (int) (Math.random() * 3);
             new Thread(new DamAir(i, iContador)).start();
             iContador++;
