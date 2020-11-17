@@ -35,7 +35,25 @@ public class B3_EJ6 {
 
     private Control control = new Control();
 
-    public class Ryanair implements Runnable {
+    /**
+     * La variable iTipo que esta en la clase {@link #DamAir(int)}, indica si el Avion es normal o si ees premium
+     * Los aviones que sean normales seran todos aquellos que no sean el numero 3, el valor de esta variable se
+     * genera aleatoriamente entre 0 y 3.
+     */
+    public class DamAir implements Runnable {
+        private int iTipo;
+
+        public DamAir (int iTipo) {
+            setiTipo(iTipo);
+        }
+
+        public int getiTipo() {
+            return iTipo;
+        }
+
+        public void setiTipo(int iTipo) {
+            this.iTipo = iTipo;
+        }
 
         @Override
         public void run() {
@@ -43,7 +61,7 @@ public class B3_EJ6 {
         }
     }
 
-    public class QatarAirways implements Runnable {
+    public class Aurelinex implements Runnable {
 
         @Override
         public void run() {
@@ -54,11 +72,11 @@ public class B3_EJ6 {
     private void executeMultiThreading() throws InterruptedException {
         int iContador = 0;
 
-        new Thread(new Dentista()).start();
+        new Thread(new Aurelinex()).start();
 
         while (true) {
             Thread.sleep(500);
-            new Thread(new Paciente(iContador)).start();
+            new Thread(new DamAir(iContador)).start();
             iContador++;
         }
     }
