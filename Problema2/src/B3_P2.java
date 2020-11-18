@@ -37,11 +37,8 @@ public class B3_P2 {
                     control.colaEstudiantes.add(this);
                     control.semaforoCocinero.release();
                     control.semaforeEstudiante.acquire();
-
-
-
-
-
+                    Thread.sleep(10000);
+                    System.out.println("El estudiante " + getiId() + " ya ha terminado de dar una vuelta por el aparcamiento.");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
