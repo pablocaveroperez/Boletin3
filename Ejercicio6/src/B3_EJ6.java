@@ -7,7 +7,7 @@ public class B3_EJ6 {
         private Semaphore semaforoDespegues = new Semaphore(0);
         private Semaphore semaforoAvion = new Semaphore(0);
         private Queue<DamAir> colaAviones = new LinkedList<DamAir>();
-        private List<DamAir> aviones = new ArrayList<DamAir>();
+        private List<DamAir> aviones;
 
         public Semaphore getSemaforoDespegues() {
             return semaforoDespegues;
@@ -29,7 +29,7 @@ public class B3_EJ6 {
             int bExito = -1;
             int iContador = 0;
             Object[] objects = colaAviones.toArray();
-
+            aviones =  new ArrayList<DamAir>();
             for (Object object : objects) {
                 aviones.add((DamAir) object);
             }
@@ -39,11 +39,8 @@ public class B3_EJ6 {
                     bExito = iContador;
                 iContador++;
             }
-
             return bExito;
         }
-
-
     }
 
     private Control control = new Control();
@@ -88,7 +85,6 @@ public class B3_EJ6 {
                         control.colaAviones.add(this);
                     else
                         damAirDeque.offerFirst(this);
-
                 }
                 else {
                     System.out.println("El avion Normal " + getiId() + " ha llegado a la pista.");
@@ -127,7 +123,7 @@ public class B3_EJ6 {
                     else
                         System.out.println("El avion Normal " + oAvion.getiId() + " se dispone va a depegar.");
 
-                    Thread.sleep(5000);
+                    Thread.sleep(15000);
                     control.semaforoAvion.release();
 
                     if (oAvion.getiTipo() == PREMIUM)
@@ -149,7 +145,6 @@ public class B3_EJ6 {
                             }
                         }
                     }
-
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -162,7 +157,7 @@ public class B3_EJ6 {
         new Thread(new Aurelinex()).start();
 
         while (true) {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
             int i = (int) (1 + Math.random() * PREMIUM);
             new Thread(new DamAir(i, iContador)).start();
             iContador++;
