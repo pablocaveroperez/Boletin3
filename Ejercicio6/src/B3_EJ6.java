@@ -118,12 +118,12 @@ public class B3_EJ6 {
                     control.semaforoDespegues.acquire();
                     DamAir oAvion = control.colaAviones.poll();
 
-                    if (oAvion.getiTipo() == PREMIUM)
+                    if (oAvion != null && oAvion.getiTipo() == PREMIUM)
                         System.out.println("El avion Premium " + oAvion.getiId() + " se dispone a depegar.");
                     else
                         System.out.println("El avion Normal " + oAvion.getiId() + " se dispone va a depegar.");
 
-                    Thread.sleep(15000);
+                    Thread.sleep(3000);
                     control.semaforoAvion.release();
 
                     if (oAvion.getiTipo() == PREMIUM)
@@ -157,7 +157,7 @@ public class B3_EJ6 {
         new Thread(new Aurelinex()).start();
 
         while (true) {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
             int i = (int) (1 + Math.random() * PREMIUM);
             new Thread(new DamAir(i, iContador)).start();
             iContador++;
