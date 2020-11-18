@@ -6,8 +6,8 @@ public class B3_P2 {
     private final int ESTUDIANTES = 10;
     private final int MAX_SERRANITOS = 15;
     public class Control {
-        private Semaphore semaforoCocinero = new Semaphore(1);
-        private Semaphore semaforeEstudiante = new Semaphore(0);
+        private Semaphore semaforoCocinero = new Semaphore(0);
+        private Semaphore semaforoEstudiante = new Semaphore(0);
         private Queue<Estudiante> colaEstudiantes = new LinkedList<Estudiante>();
         private int serranitosActuales = MAX_SERRANITOS;
 
@@ -19,12 +19,12 @@ public class B3_P2 {
             this.semaforoCocinero = semaforoCocinero;
         }
 
-        public Semaphore getSemaforeEstudiante() {
-            return semaforeEstudiante;
+        public Semaphore getSemaforoEstudiante() {
+            return semaforoEstudiante;
         }
 
-        public void setSemaforeEstudiante(Semaphore semaforeEstudiante) {
-            this.semaforeEstudiante = semaforeEstudiante;
+        public void setSemaforoEstudiante(Semaphore semaforoEstudiante) {
+            this.semaforoEstudiante = semaforoEstudiante;
         }
 
         public Queue<Estudiante> getColaEstudiantes() {
@@ -66,9 +66,8 @@ public class B3_P2 {
             do {
                 try {
                     control.colaEstudiantes.add(this);
-                    control.semaforoCocinero.acquire();
-                    control.semaforeEstudiante.release();
-                    Thread.sleep(10000);
+                    control.semaforoCocinero.release();
+                    control.semaforoEstudiante.acquire();
                     System.out.println("El estudiante " + getiId() + " ya ha terminado de dar una vuelta por el aparcamiento.");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -106,13 +105,14 @@ public class B3_P2 {
             System.out.println("El cocinero está preparado.");
             do {
                 try {
-                    control.semaforeEstudiante.release();
+                    control.semaforoCocinero.acquire();
                     Estudiante estudiante = control.colaEstudiantes.poll();
                     cogerSerranito(estudiante);
                     if (estudiante != null) {
                         System.out.println("El estudiante " + estudiante.getiId() + " ya se ha comido el Serranito y va a dar una vuelta por el aparcamiento.");
+                        Thread.sleep(10000);
                         System.out.println("El Estudiante " +  estudiante.getiId() + " tiene hambre de Serranito otra vez");
-                        control.semaforoCocinero.release();
+                        control.semaforoEstudiante.release();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
