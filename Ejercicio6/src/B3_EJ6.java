@@ -7,6 +7,7 @@ public class B3_EJ6 {
         private Semaphore semaforoDespegues = new Semaphore(0);
         private Semaphore semaforoAvion = new Semaphore(0);
         private Queue<DamAir> colaAviones = new LinkedList<DamAir>();
+        private List<DamAir> aviones = new ArrayList<DamAir>();
 
         public Semaphore getSemaforoDespegues() {
             return semaforoDespegues;
@@ -24,24 +25,25 @@ public class B3_EJ6 {
             this.colaAviones = colaAviones;
         }
 
-        public boolean hayNormalEnCola() {
-            boolean bExito = false;
+        public int hayNormalEnCola() {
+            int bExito = -1;
             int iContador = 0;
-            List<DamAir> aviones = new ArrayList<DamAir>();
             Object[] objects = colaAviones.toArray();
 
             for (Object object : objects) {
                 aviones.add((DamAir) object);
             }
 
-            while (iContador < aviones.size() && !bExito) {
+            while (iContador < aviones.size() && bExito == -1) {
                 if (aviones.get(iContador).getiTipo() != PREMIUM)
-                    bExito = true;
+                    bExito = iContador;
                 iContador++;
             }
 
             return bExito;
         }
+
+
     }
 
     private Control control = new Control();
@@ -78,24 +80,24 @@ public class B3_EJ6 {
 
         @Override
         public synchronized void run() {
-            if (getiTipo() == PREMIUM) {
-                System.out.println("El avion Premium " + getiId() + " ha llegado a la pista.");
-                Deque<DamAir> damAirDeque = (Deque<DamAir>) control.colaAviones;
-                damAirDeque.offerFirst(this);
-                control.colaAviones = damAirDeque;
-            }
-            else {
-                System.out.println("El avion Normal " + getiId() + " ha llegado a la pista.");
-                control.colaAviones.add(this);
-            }
             try {
+                Deque<DamAir> damAirDeque = (Deque<DamAir>) control.colaAviones;
+                if (getiTipo() == PREMIUM) {
+                    System.out.println("El avion Premium " + getiId() + " ha llegado a la pista.");
+                    if (control.colaAviones.peek() != null && control.colaAviones.peek().getiTipo() == PREMIUM)
+                        control.colaAviones.add(this);
+                    else
+                        damAirDeque.offerFirst(this);
 
+                }
+                else {
+                    System.out.println("El avion Normal " + getiId() + " ha llegado a la pista.");
+                    control.colaAviones.add(this);
+                }
+                control.colaAviones = damAirDeque;
                 control.semaforoDespegues.release();
                 control.semaforoAvion.acquire();
-                if (getiTipo() == PREMIUM)
-                    System.out.println("El avion Premium " + getiId() + " ha terminado el despegue y ha dejado la pista libre.");
-                else
-                    System.out.println("El avion Normal " + getiId() + " ha terminado el despegue y ha dejado la pista libre.");
+
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -118,27 +120,36 @@ public class B3_EJ6 {
             do {
                 try {
                     control.semaforoDespegues.acquire();
-                    DamAir iDespegue = control.colaAviones.poll();
+                    DamAir oAvion = control.colaAviones.poll();
 
-                    assert iDespegue != null;
-                    if (iDespegue.getiTipo() == PREMIUM)
-                        System.out.println("El avion Premium " + iDespegue.getiId() + " se dispone a depegar.");
+                    if (oAvion.getiTipo() == PREMIUM)
+                        System.out.println("El avion Premium " + oAvion.getiId() + " se dispone a depegar.");
                     else
-                        System.out.println("El avion Normal " + iDespegue.getiId() + " se dispone va a depegar.");
+                        System.out.println("El avion Normal " + oAvion.getiId() + " se dispone va a depegar.");
 
-                    Thread.sleep(15000);
+                    Thread.sleep(5000);
                     control.semaforoAvion.release();
 
-                    DamAir iNextInQueue = null;
-                    if (control.colaAviones.peek() != null) {
-                        iNextInQueue = control.colaAviones.peek();
-                    }
+                    if (oAvion.getiTipo() == PREMIUM)
+                        System.out.println("El avion Premium " + oAvion.getiId() + " ha terminado el despegue y ha dejado la pista libre.");
+                    else
+                        System.out.println("El avion Normal " + oAvion.getiId() + " ha terminado el despegue y ha dejado la pista libre.");
 
-                    if (iDespegue.getiTipo() == PREMIUM && (iNextInQueue != null && iNextInQueue.getiTipo() == PREMIUM) ) {
-                        if (control.hayNormalEnCola()) {
-                            control.colaAviones.add(control.colaAviones.poll());
+                    DamAir oSiguienteEnCola = null;
+                    if (control.colaAviones.peek() != null) {
+                        oSiguienteEnCola = control.colaAviones.peek();
+                        if (oAvion.getiTipo() == PREMIUM && (oSiguienteEnCola.getiTipo() == PREMIUM) ) {
+                            int iPosicion = control.hayNormalEnCola();
+                            if (iPosicion != -1) {
+                                Deque<DamAir> damAirDeque = (Deque<DamAir>) control.colaAviones;
+                                damAirDeque.offerFirst(control.colaAviones.poll());
+                                damAirDeque.remove(control.aviones.get(iPosicion));
+                                damAirDeque.offerFirst(control.aviones.get(iPosicion));
+                                control.colaAviones = damAirDeque;
+                            }
                         }
                     }
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -151,7 +162,7 @@ public class B3_EJ6 {
         new Thread(new Aurelinex()).start();
 
         while (true) {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
             int i = (int) (1 + Math.random() * PREMIUM);
             new Thread(new DamAir(i, iContador)).start();
             iContador++;
