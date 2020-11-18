@@ -64,19 +64,40 @@ public class B3_P2 {
             this.iId = iId;
         }
 
+        private void cogerSerranito(Estudiante estudiante) throws InterruptedException {
+            if (control.serranitosActuales != 0) {
+                if (estudiante != null) {
+                    System.out.println("El estudiante " + estudiante.getiId() + " ha cogido el serranito " + getiId());
+                    control.serranitosActuales--;
+                }else
+                    System.out.println("No hay estudiantes en la cola.");
+            }else{
+                System.out.println("El estudiante " + estudiante.getiId() + " iba a coger un serranito pero no quedan. Asi que va a despertar al cocinero");
+                reponerSerranitos(estudiante);
+            }
+        }
+
+        private void reponerSerranitos(Estudiante estudiante) throws InterruptedException {
+            System.out.println("El Cocinero ha despertado");
+            System.out.println("No quedan mas serranitos, por lo que el cocinero va a reponerlos.");
+            Thread.sleep(5000);
+            control.serranitosActuales = MAX_SERRANITOS;
+            System.out.println("El Cocinero ha repuesto todos los Serranitos.");
+            System.out.println("El estudiante " + estudiante.getiId() + " ha cogido el serranito " + getiId());
+            control.serranitosActuales--;
+        }
+
         @Override
         public void run() {
             System.out.println("El cocinero está preparado.");
             do {
                 try {
                     control.semaforoCocinero.acquire();
-                    if (control.serranitosActuales != 0) {
-                        control.serranitosActuales--;
-                        Estudiante estudiante = control.colaEstudiantes.poll();
-                        if (estudiante != null) {
-                            System.out.println("El estudiante " + estudiante.getiId() + " ha cogido el serranito " + getiId());
-
-                        }
+                    Estudiante estudiante = control.colaEstudiantes.poll();
+                    cogerSerranito(estudiante);
+                    if (estudiante != null) {
+                        System.out.println("El estudiante " + estudiante.getiId() + " ya se ha comido el Serranito y va a dar una vuelta por el aparcamiento.");
+                        control.semaforeEstudiante.release();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
