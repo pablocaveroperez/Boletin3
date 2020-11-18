@@ -10,6 +10,38 @@ public class B3_P2 {
         private Semaphore semaforeEstudiante = new Semaphore(0);
         private Queue<Estudiante> colaEstudiantes = new LinkedList<Estudiante>();
         private int serranitosActuales = MAX_SERRANITOS;
+
+        public Semaphore getSemaforoCocinero() {
+            return semaforoCocinero;
+        }
+
+        public void setSemaforoCocinero(Semaphore semaforoCocinero) {
+            this.semaforoCocinero = semaforoCocinero;
+        }
+
+        public Semaphore getSemaforeEstudiante() {
+            return semaforeEstudiante;
+        }
+
+        public void setSemaforeEstudiante(Semaphore semaforeEstudiante) {
+            this.semaforeEstudiante = semaforeEstudiante;
+        }
+
+        public Queue<Estudiante> getColaEstudiantes() {
+            return colaEstudiantes;
+        }
+
+        public void setColaEstudiantes(Queue<Estudiante> colaEstudiantes) {
+            this.colaEstudiantes = colaEstudiantes;
+        }
+
+        public int getSerranitosActuales() {
+            return serranitosActuales;
+        }
+
+        public void setSerranitosActuales(int serranitosActuales) {
+            this.serranitosActuales = serranitosActuales;
+        }
     }
 
     private Control control = new Control();
@@ -33,10 +65,9 @@ public class B3_P2 {
         public void run() {
             do {
                 try {
-                    System.out.println("El Estudiante " +  getiId() + " tiene hambre de Serranito otra vez");
                     control.colaEstudiantes.add(this);
-                    control.semaforoCocinero.release();
-                    control.semaforeEstudiante.acquire();
+                    control.semaforoCocinero.acquire();
+                    control.semaforeEstudiante.release();
                     Thread.sleep(10000);
                     System.out.println("El estudiante " + getiId() + " ya ha terminado de dar una vuelta por el aparcamiento.");
                 } catch (InterruptedException e) {
@@ -47,24 +78,10 @@ public class B3_P2 {
     }
 
     public class Cocinero implements Runnable {
-        private int iId;
-
-        public Cocinero(int iId) {
-            setiId(iId);
-        }
-
-        public int getiId() {
-            return iId;
-        }
-
-        public void setiId(int iId) {
-            this.iId = iId;
-        }
-
         private void cogerSerranito(Estudiante estudiante) throws InterruptedException {
             if (control.serranitosActuales != 0) {
                 if (estudiante != null) {
-                    System.out.println("El estudiante " + estudiante.getiId() + " ha cogido el serranito " + getiId());
+                    System.out.println("El estudiante " + estudiante.getiId() + " ha cogido un serranito ");
                     control.serranitosActuales--;
                 }else
                     System.out.println("No hay estudiantes en la cola.");
@@ -80,7 +97,7 @@ public class B3_P2 {
             Thread.sleep(5000);
             control.serranitosActuales = MAX_SERRANITOS;
             System.out.println("El Cocinero ha repuesto todos los Serranitos.");
-            System.out.println("El estudiante " + estudiante.getiId() + " ha cogido el serranito " + getiId());
+            System.out.println("El estudiante " + estudiante.getiId() + " ha cogido un serranito.");
             control.serranitosActuales--;
         }
 
@@ -89,12 +106,13 @@ public class B3_P2 {
             System.out.println("El cocinero está preparado.");
             do {
                 try {
-                    control.semaforoCocinero.acquire();
+                    control.semaforeEstudiante.release();
                     Estudiante estudiante = control.colaEstudiantes.poll();
                     cogerSerranito(estudiante);
                     if (estudiante != null) {
                         System.out.println("El estudiante " + estudiante.getiId() + " ya se ha comido el Serranito y va a dar una vuelta por el aparcamiento.");
-                        control.semaforeEstudiante.release();
+                        System.out.println("El Estudiante " +  estudiante.getiId() + " tiene hambre de Serranito otra vez");
+                        control.semaforoCocinero.release();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -104,13 +122,11 @@ public class B3_P2 {
     }
 
     private void executeMultiThreading() throws InterruptedException {
-        for (int i = 0; i < MAX_SERRANITOS; i++) {
-            new Thread(new Cocinero(i)).start();
-        }
-
         for (int i = 0; i < ESTUDIANTES; i++) {
             new Thread(new Estudiante(i)).start();
         }
+
+        new Thread(new Cocinero()).start();
     }
 
     public static void main(String[] args) {
