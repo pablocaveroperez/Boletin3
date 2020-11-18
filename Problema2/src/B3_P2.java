@@ -3,16 +3,24 @@ import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
 public class B3_P2 {
-    private final int ESTUDIANTES = 10;
-    private final int MAX_SERRANITOS = 15;
+    private final int ESTUDIANTES = 5;
+    private final int MAX_SERRANITOS = 3;
     public class Control {
         private Semaphore semaforoCocinero = new Semaphore(0);
         private Semaphore semaforoEstudiante = new Semaphore(0);
-        private Queue<Estudiante> colaEstudiantes = new LinkedList<Estudiante>();
         private int serranitosActuales = MAX_SERRANITOS;
+        private volatile int iId;
 
         public Semaphore getSemaforoCocinero() {
             return semaforoCocinero;
+        }
+
+        public int getiId() {
+            return iId;
+        }
+
+        public void setiId(int iId) {
+            this.iId = iId;
         }
 
         public void setSemaforoCocinero(Semaphore semaforoCocinero) {
@@ -27,20 +35,29 @@ public class B3_P2 {
             this.semaforoEstudiante = semaforoEstudiante;
         }
 
-        public Queue<Estudiante> getColaEstudiantes() {
-            return colaEstudiantes;
-        }
-
-        public void setColaEstudiantes(Queue<Estudiante> colaEstudiantes) {
-            this.colaEstudiantes = colaEstudiantes;
-        }
-
         public int getSerranitosActuales() {
             return serranitosActuales;
         }
 
         public void setSerranitosActuales(int serranitosActuales) {
             this.serranitosActuales = serranitosActuales;
+        }
+
+        private void cogerSerranito() throws InterruptedException {
+            if (control.serranitosActuales != 0) {
+                System.out.println("El estudiante " + getiId() + " ha cogido un serranito ");
+                control.serranitosActuales--;
+            }
+        }
+
+        private void reponerSerranitos() throws InterruptedException {
+            System.out.println("El Cocinero ha despertado");
+            System.out.println("No quedan mas serranitos, por lo que el cocinero va a reponerlos.");
+            Thread.sleep(5000);
+            control.serranitosActuales = MAX_SERRANITOS;
+            System.out.println("El Cocinero ha repuesto todos los Serranitos.");
+            System.out.println("El estudiante " + getiId() + " ha cogido un serranito.");
+            control.serranitosActuales--;
         }
     }
 
@@ -65,10 +82,19 @@ public class B3_P2 {
         public void run() {
             do {
                 try {
-                    control.colaEstudiantes.add(this);
-                    control.semaforoCocinero.release();
-                    control.semaforoEstudiante.acquire();
-                    System.out.println("El estudiante " + getiId() + " ya ha terminado de dar una vuelta por el aparcamiento.");
+                    control.semaforoCocinero.acquire();
+                    control.setiId(getiId());
+                    System.out.println("El estudiante " + control.getiId() + " quiere un serranito.");
+                    if (control.serranitosActuales != 0) {
+                        control.cogerSerranito();
+                    }else {
+                        System.out.println("El estudiante " + control.getiId() + " ha despertado al cocinero que es un floho.");
+                        control.reponerSerranitos();
+                    }
+                    Thread.sleep(2000);
+                    System.out.println("El estudiante " + control.getiId() + " ya se ha comido el Serranito y va a dar una vuelta por el aparcamiento.");
+                    control.semaforoEstudiante.release();
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -77,43 +103,16 @@ public class B3_P2 {
     }
 
     public class Cocinero implements Runnable {
-        private void cogerSerranito(Estudiante estudiante) throws InterruptedException {
-            if (control.serranitosActuales != 0) {
-                if (estudiante != null) {
-                    System.out.println("El estudiante " + estudiante.getiId() + " ha cogido un serranito ");
-                    control.serranitosActuales--;
-                }else
-                    System.out.println("No hay estudiantes en la cola.");
-            }else{
-                System.out.println("El estudiante " + estudiante.getiId() + " iba a coger un serranito pero no quedan. Asi que va a despertar al cocinero");
-                reponerSerranitos(estudiante);
-            }
-        }
-
-        private void reponerSerranitos(Estudiante estudiante) throws InterruptedException {
-            System.out.println("El Cocinero ha despertado");
-            System.out.println("No quedan mas serranitos, por lo que el cocinero va a reponerlos.");
-            Thread.sleep(5000);
-            control.serranitosActuales = MAX_SERRANITOS;
-            System.out.println("El Cocinero ha repuesto todos los Serranitos.");
-            System.out.println("El estudiante " + estudiante.getiId() + " ha cogido un serranito.");
-            control.serranitosActuales--;
-        }
-
         @Override
         public void run() {
             System.out.println("El cocinero está preparado.");
             do {
                 try {
-                    control.semaforoCocinero.acquire();
-                    Estudiante estudiante = control.colaEstudiantes.poll();
-                    cogerSerranito(estudiante);
-                    if (estudiante != null) {
-                        System.out.println("El estudiante " + estudiante.getiId() + " ya se ha comido el Serranito y va a dar una vuelta por el aparcamiento.");
-                        Thread.sleep(10000);
-                        System.out.println("El Estudiante " +  estudiante.getiId() + " tiene hambre de Serranito otra vez");
-                        control.semaforoEstudiante.release();
-                    }
+                    control.semaforoCocinero.release();
+
+                    Thread.sleep(2000);
+                    control.semaforoEstudiante.acquire();
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
