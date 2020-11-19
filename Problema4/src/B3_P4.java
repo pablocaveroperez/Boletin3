@@ -8,8 +8,8 @@ public class B3_P4 {
     private final byte BAJA = 0;
 
     public class Control {
-        private Semaphore semaforoBaja = new Semaphore(10);
-        private Semaphore semaforoSube = new Semaphore(10);
+        private Semaphore semaforoBaja = new Semaphore(0);
+        private Semaphore semaforoSube = new Semaphore(0);
         private Queue<Estudiante> colaSube = new LinkedList<Estudiante>();
         private Queue<Estudiante> colaBaja = new LinkedList<Estudiante>();
 
@@ -85,7 +85,7 @@ public class B3_P4 {
                     control.colaBaja.add(this);
                     control.semaforoBaja.acquire();
                 }
-                System.out.println("El estudiante " + getiId() + " ya ha salido de la escalera.");
+                System.out.println("El estudiante " + getiId() + " ha salido de la escalera.");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -96,7 +96,32 @@ public class B3_P4 {
 
         @Override
         public synchronized void run() {
-
+            do {
+                try {
+                    Thread.sleep(250);
+                    if (control.colaBaja.size() >= PERSONAS_A_LA_VEZ || control.colaSube.isEmpty()) {
+                        int iTamanio = control.colaBaja.size();
+                        int i;
+                        if (control.colaBaja.size() > PERSONAS_A_LA_VEZ)
+                            iTamanio = PERSONAS_A_LA_VEZ;
+                        for (i = 0; i < iTamanio; i++)
+                            control.colaBaja.poll();
+                        System.out.println("Han bajado " + iTamanio + " estudiantes.");
+                        control.semaforoBaja.release(iTamanio);
+                    } else if (control.colaSube.size() >= PERSONAS_A_LA_VEZ || control.colaBaja.isEmpty()) {
+                        int iTamanio = control.colaSube.size();
+                        int i;
+                        if (control.colaSube.size() > PERSONAS_A_LA_VEZ)
+                            iTamanio = PERSONAS_A_LA_VEZ;
+                        for (i = 0; i < iTamanio; i++)
+                            control.colaSube.poll();
+                        System.out.println("Han subido " + iTamanio + " estudiantes.");
+                        control.semaforoSube.release(iTamanio);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }while(true);
         }
     }
 
