@@ -82,14 +82,12 @@ public class B3_P4 {
                     if (control.semaforoSube.getQueueLength() != 0 && control.semaforoBaja.getQueueLength() != 0) {
                         if (control.semaforoBaja.getQueueLength() >= PERSONAS_A_LA_VEZ || control.semaforoSube.getQueueLength() == 0) {
                             int iTamanio = control.semaforoBaja.getQueueLength();
-                            int i;
                             if (control.semaforoBaja.getQueueLength() > PERSONAS_A_LA_VEZ)
                                 iTamanio = PERSONAS_A_LA_VEZ;
                             System.out.println("Han bajado " + iTamanio + " estudiantes.");
                             control.semaforoBaja.release(iTamanio);
                         } else if (control.semaforoSube.getQueueLength() >= PERSONAS_A_LA_VEZ || control.semaforoBaja.getQueueLength() == 0) {
                             int iTamanio = control.semaforoSube.getQueueLength();
-                            int i;
                             if (control.semaforoSube.getQueueLength() > PERSONAS_A_LA_VEZ)
                                 iTamanio = PERSONAS_A_LA_VEZ;
                             System.out.println("Han subido " + iTamanio + " estudiantes.");
