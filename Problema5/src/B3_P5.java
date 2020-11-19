@@ -29,10 +29,27 @@ public class B3_P5 {
 
     public class Urelio implements Runnable {
 
+        private void atiendeDiscord() {
+            control.semaforoDiscord.release();
+        }
+
+        private void atiendeGoogleMeets() {
+            control.semaforoGoogleMeets.release();
+        }
+
         @Override
         public synchronized void run() {
             do {
-
+                if (control.semaforoGoogleMeets.getQueueLength() > control.semaforoDiscord.getQueueLength()) {
+                    atiendeGoogleMeets();
+                } else if (control.semaforoGoogleMeets.getQueueLength() == control.semaforoDiscord.getQueueLength()) {
+                    byte bNum = (byte) (Math.random() * 2);
+                    if (bNum == DISCORD) {
+                        atiendeDiscord();
+                    }else
+                        atiendeGoogleMeets();
+                } else
+                    atiendeDiscord();
             }while (true);
         }
     }
@@ -64,11 +81,21 @@ public class B3_P5 {
         @Override
         public synchronized void run() {
             setbPlataforma((byte) (Math.random() * 2));
+            try {
+                if (getbPlataforma() == DISCORD) {
+                    control.semaforoDiscord.acquire();
+                }else {
+                    control.semaforoGoogleMeets.acquire();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void executeMultiThreading() throws InterruptedException {
         int iContador = 0;
+
         new Thread(new Urelio()).start();
 
         while (true) {
