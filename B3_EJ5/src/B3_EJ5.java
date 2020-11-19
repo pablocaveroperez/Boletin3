@@ -7,7 +7,6 @@ public class B3_EJ5 {
     public class Control {
         private Semaphore semaforoAscensor = new Semaphore(NUM_ASCENSORES);
         private Semaphore semaforoPlanta = new Semaphore(0);
-        private Deque<Planta> colaLlamadasAscensor = new LinkedList<Planta>();
         private List<Ascensor> ascensores = new ArrayList<>();
 
         public List<Ascensor> getAscensores() {
@@ -32,14 +31,6 @@ public class B3_EJ5 {
 
         public void setSemaforoPlanta(Semaphore semaforoPlanta) {
             this.semaforoPlanta = semaforoPlanta;
-        }
-
-        public Deque<Planta> getColaLlamadasAscensor() {
-            return colaLlamadasAscensor;
-        }
-
-        public void setColaLlamadasAscensor(Deque<Planta> colaLlamadasAscensor) {
-            this.colaLlamadasAscensor = colaLlamadasAscensor;
         }
 
         public Ascensor ascensorCercano(int iPlanta) {
@@ -97,7 +88,6 @@ public class B3_EJ5 {
                     e.printStackTrace();
                 }
 
-                int iPlanta = control.colaLlamadasAscensor.poll().iId;
 
                 System.out.println("Se ha llamado al ascensor " + iId + " desde la planta " + iPlanta);
                 System.out.println("El ascensor " + iId + " está ocupado");
@@ -118,6 +108,7 @@ public class B3_EJ5 {
     public class Planta implements Runnable {
 
         private int iId = 0;
+        private int iPlantaDestino = 0;
 
         public Planta(int iId) {
             this.iId = iId;
@@ -131,17 +122,21 @@ public class B3_EJ5 {
             this.iId = iId;
         }
 
+        public int getiPlantaDestino() {
+            return iPlantaDestino;
+        }
+
+        public void setiPlantaDestino(int iPlantaDestino) {
+            this.iPlantaDestino = iPlantaDestino;
+        }
+
         @Override
         public void run() {
+            int iAleatorio = (int) (Math.random() *15);
+            while (iAleatorio == getiId())
+                setiPlantaDestino(iAleatorio);
 
             System.out.println("Se pulsa el botón en la planta " + getiId());
-
-            Ascensor ascensor = control.ascensorCercano(getiId());
-
-           if (ascensor != null) {
-               control.colaLlamadasAscensor.offerFirst(this);
-           }else
-               control.colaLlamadasAscensor.add(this);
 
             control.semaforoPlanta.release();
         }
