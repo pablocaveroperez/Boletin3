@@ -12,7 +12,6 @@ public class B3_P3 {
         private Semaphore semaforoTabaco = new Semaphore(1);
         private Semaphore semaforoPapel = new Semaphore(1);
         private Semaphore semaforoCerillas = new Semaphore(1);
-        private volatile boolean cigarListo = false;
 
         public Semaphore getSemaforoTabaco() {
             return semaforoTabaco;
@@ -36,14 +35,6 @@ public class B3_P3 {
 
         public void setSemaforoCerillas(Semaphore semaforoCerillas) {
             this.semaforoCerillas = semaforoCerillas;
-        }
-
-        public boolean isCigarListo() {
-            return cigarListo;
-        }
-
-        public void setCigarListo(boolean cigarListo) {
-            this.cigarListo = cigarListo;
         }
 
         public Semaphore getSemaforoMalboro() {
@@ -106,10 +97,27 @@ public class B3_P3 {
         private int iIngrediente;
         private int iId;
         private int iCigarsFumados = 0;
+        private boolean cigarListo = false;
 
         public Estudiante(int iId, int iIngrediente) {
             setiId(iId);
             setiIngrediente(iIngrediente);
+        }
+
+        public int getiCigarsFumados() {
+            return iCigarsFumados;
+        }
+
+        public void setiCigarsFumados(int iCigarsFumados) {
+            this.iCigarsFumados = iCigarsFumados;
+        }
+
+        public boolean isCigarListo() {
+            return cigarListo;
+        }
+
+        public void setCigarListo(boolean cigarListo) {
+            this.cigarListo = cigarListo;
         }
 
         public int getiIngrediente() {
@@ -131,6 +139,7 @@ public class B3_P3 {
         @Override
         public void run() {
             do {
+                setCigarListo(false);
                 try {
                     control.semaforoMalboro.acquire();
 
@@ -141,10 +150,23 @@ public class B3_P3 {
                         control.semaforoPapel.acquire();
                         System.out.println("El estudiante " + getiId() + " ha cogido papel.");
                         control.semaforoCerillas.acquire();
-                        control.setCigarListo(false);
+                        System.out.println("El estudiante " + getiId() + " ha cogido cerillas.");
+                        setCigarListo(true);
+                    }else if (getiIngrediente() == PAPEL) {
+                        control.semaforoCerillas.acquire();
+                        System.out.println("El estudiante " + getiId() + " ha cogido cerilla.");
+                        control.semaforoTabaco.acquire();
+                        System.out.println("El estudiante " + getiId() + " ha cogido tabaco.");
+                        setCigarListo(true);
+                    }else if (getiIngrediente() == CERILLA) {
+                        control.semaforoPapel.acquire();
+                        System.out.println("El estudiante " + getiId() + " ha cogido papel.");
+                        control.semaforoTabaco.acquire();
+                        System.out.println("El estudiante " + getiId() + " ha cogido tabaco.");
+                        setCigarListo(true);
                     }
 
-                    if (control.cigarListo) {
+                    if (cigarListo) {
                         System.out.println("El estudiante " + getiId() + " se va a fumar un cigar.");
                         iCigarsFumados++;
                     }
