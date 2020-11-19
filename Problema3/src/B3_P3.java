@@ -9,12 +9,34 @@ public class B3_P3 {
     public class Control {
         private Semaphore semaforoMalboro = new Semaphore(0);
         private Semaphore semaforoEstudiante = new Semaphore(0);
-        private volatile int iIngrediente;
-        private volatile int iId;
-        private Semaphore hayTabaco = new Semaphore(1);
-        private Semaphore hayPapel = new Semaphore(1);
-        private Semaphore hayCerillas = new Semaphore(1);
+        private Semaphore semaforoTabaco = new Semaphore(1);
+        private Semaphore semaforoPapel = new Semaphore(1);
+        private Semaphore semaforoCerillas = new Semaphore(1);
         private volatile boolean cigarListo = false;
+
+        public Semaphore getSemaforoTabaco() {
+            return semaforoTabaco;
+        }
+
+        public void setSemaforoTabaco(Semaphore semaforoTabaco) {
+            this.semaforoTabaco = semaforoTabaco;
+        }
+
+        public Semaphore getSemaforoPapel() {
+            return semaforoPapel;
+        }
+
+        public void setSemaforoPapel(Semaphore semaforoPapel) {
+            this.semaforoPapel = semaforoPapel;
+        }
+
+        public Semaphore getSemaforoCerillas() {
+            return semaforoCerillas;
+        }
+
+        public void setSemaforoCerillas(Semaphore semaforoCerillas) {
+            this.semaforoCerillas = semaforoCerillas;
+        }
 
         public boolean isCigarListo() {
             return cigarListo;
@@ -40,23 +62,7 @@ public class B3_P3 {
             this.semaforoEstudiante = semaforoEstudiante;
         }
 
-        public int getiIngrediente() {
-            return iIngrediente;
-        }
-
-        public void setiIngrediente(int iIngrediente) {
-            this.iIngrediente = iIngrediente;
-        }
-
-        public int getiId() {
-            return iId;
-        }
-
-        public void setiId(int iId) {
-            this.iId = iId;
-        }
-
-        public String ingredienteToString() {
+        public String ingredienteToString(int iIngrediente) {
             String salida = null;
             if (iIngrediente == PAPEL)
                 salida = "Papel";
@@ -67,10 +73,30 @@ public class B3_P3 {
             return salida;
         }
 
-        private void nadaDisponible() {
-            setHayPapel(false);
-            setHayTabaco(false);
-            setHayCerillas(false);
+        public String reponer() {
+            String salida = null;
+            int iNum1 = numAleatorio();
+            int iNum2 = numAleatorio();
+            while (iNum1 == iNum2) {
+                iNum1 = numAleatorio();
+                iNum2 = numAleatorio();
+            }
+
+            if ((iNum1 == TABACO || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == TABACO)) {
+                semaforoTabaco.release();
+                semaforoCerillas.release();
+                salida = "Tabaco y cerillas";
+            }else if ((iNum1 == TABACO || iNum1 == PAPEL) && (iNum2 == PAPEL || iNum2 == TABACO)) {
+                semaforoTabaco.release();
+                semaforoPapel.release();
+                salida = "Tabaco y papel";
+            }else if ((iNum1 == PAPEL || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == PAPEL)) {
+                semaforoPapel.release();
+                semaforoCerillas.release();
+                salida = "Cerilla y papel";
+            }else
+                salida = "Sucki Sucki";
+            return salida;
         }
     }
 
@@ -107,18 +133,22 @@ public class B3_P3 {
             do {
                 try {
                     control.semaforoMalboro.acquire();
-                    control.setiIngrediente(getiIngrediente());
-                    control.setiId(getiId());
 
                     control.semaforoEstudiante.acquire();
-                    System.out.println("El estudiante " + control.getiId() + " se quiere fumar un cigarro. Tiene el siguiente ingrediente: " + control.ingredienteToString());
+                    System.out.println("El estudiante " + getiId() + " se quiere fumar un cigarro. Tiene el siguiente ingrediente: " + control.ingredienteToString(getiIngrediente()));
+
+                    if (getiIngrediente() == TABACO) {
+                        control.semaforoPapel.acquire();
+                        System.out.println("El estudiante " + getiId() + " ha cogido papel.");
+                        control.semaforoCerillas.acquire();
+                        control.setCigarListo(false);
+                    }
 
                     if (control.cigarListo) {
-                        System.out.println("El estudiante " + control.getiId() + " se va a fumar un cigar.");
+                        System.out.println("El estudiante " + getiId() + " se va a fumar un cigar.");
                         iCigarsFumados++;
-                        System.out.println("En la mesa de malboro pasa a haber los siguientes ingredientes: " + control.reponer());
                     }
-                    System.out.println("El estudiante " + control.getiId() + " se va a dar una vuelta. Dice que ahora vuelve");
+                    System.out.println("El estudiante " + getiId() + " se va a dar una vuelta. Dice que ahora vuelve");
                     Thread.sleep(5000);
 
 
@@ -130,43 +160,25 @@ public class B3_P3 {
     }
 
     public class Malboro implements Runnable {
-
         @Override
         public void run() {
             System.out.println("Malboro ha puesto en las mesas los siguientes ingredientes: " + control.reponer());
-
             do {
-
 
                 control.semaforoMalboro.release();
 
 
 
-                control.setCigarListo(false);
-
-                System.out.println("El estudiante " + control.getiId() + " va a por los ingredientes restantes.");
-                if (control.getiIngrediente() == TABACO) {
-                    if (control.isHayCerillas() && control.isHayPapel()) {
-                        System.out.println("El estudiante " + control.getiId() + " coge los ingredientes que le faltaban");
-                        control.setCigarListo(true);
-                    } else
-                        System.out.println("Los ingredientes que el estudiante " + control.getiId() + " necesita no estan en la mesa.");
-
-                }else if (control.getiIngrediente() == CERILLA) {
-                    if (control.isHayPapel() && control.hayTabaco) {
-                        System.out.println("El estudiante " + control.getiId() + " coge los ingredientes que le faltaban");
-                        control.setCigarListo(true);
-                    } else
-                        System.out.println("Los ingredientes que el estudiante " + control.getiId() + " necesita no estan en la mesa.");
-                }else if (control.getiIngrediente() == PAPEL) {
-                    if (control.hayTabaco && control.hayCerillas) {
-                        System.out.println("El estudiante " + control.getiId() + " coge los ingredientes que le faltaban");
-                        control.setCigarListo(true);
-                    } else
-                        System.out.println("Los ingredientes que el estudiante " + control.getiId() + " necesita no estan en la mesa.");
-                }else
-                    System.err.println("Parece que algo no ha ido bien");
                 control.semaforoEstudiante.release();
+
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                System.out.println("Malboro ha puesto en las mesas los siguientes ingredientes: " + control.reponer());
+
             }while(true);
         }
     }

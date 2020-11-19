@@ -40,6 +40,23 @@ public class B3_EJ6 {
             }
             return bExito;
         }
+
+        public int hayPremiumEnCola() {
+            int bExito = -1;
+            int iContador = 0;
+            Object[] objects = colaAviones.toArray();
+            aviones =  new ArrayList<DamAir>();
+            for (Object object : objects) {
+                aviones.add((DamAir) object);
+            }
+
+            while (iContador < aviones.size() && bExito == -1) {
+                if (aviones.get(iContador).getiTipo() == PREMIUM)
+                    bExito = iContador;
+                iContador++;
+            }
+            return bExito;
+        }
     }
 
     private final Control control = new Control();
@@ -79,8 +96,11 @@ public class B3_EJ6 {
             Deque<DamAir> damAirDeque = (Deque<DamAir>) control.colaAviones;
             if (getiTipo() == PREMIUM) {
                 System.out.println("El avion Premium " + getiId() + " ha llegado a la pista.");
-                if (control.colaAviones.peek() != null && control.colaAviones.peek().getiTipo() == PREMIUM)
-                    control.colaAviones.add(this);
+                int iPos = control.hayPremiumEnCola();
+                if (iPos != -1) {
+                    damAirDeque.remove(control.aviones.get(iPos));
+                    damAirDeque.offerFirst(control.aviones.get(iPos));
+                }
                 else
                     damAirDeque.offerFirst(this);
             }
