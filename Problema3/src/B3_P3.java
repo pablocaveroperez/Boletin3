@@ -1,7 +1,6 @@
 import java.util.concurrent.Semaphore;
 
 public class B3_P3 {
-    private final byte ESTUDIANTES = 10;
     private final byte PAPEL = 1;
     private final byte CERILLA = 2;
     private final byte TABACO = 3;
@@ -33,35 +32,6 @@ public class B3_P3 {
 
         public void setSemaforoCerillas(Semaphore semaforoCerillas) {
             this.semaforoCerillas = semaforoCerillas;
-        }
-
-        public String reponer() throws InterruptedException {
-            String salida = null;
-            int iNum1 = numAleatorio(1, 3);
-            int iNum2 = numAleatorio(1, 3);
-            while (iNum1 == iNum2) {
-                iNum1 = numAleatorio(1, 3);
-                iNum2 = numAleatorio(1, 3);
-            }
-
-            if ((iNum1 == TABACO || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == TABACO)) {
-                semaforoTabaco = new Semaphore(1);
-                semaforoCerillas = new Semaphore(1);
-                semaforoPapel = new Semaphore(0);
-                salida = "Tabaco y cerillas";
-            } else if ((iNum1 == TABACO || iNum1 == PAPEL) && (iNum2 == PAPEL || iNum2 == TABACO)) {
-                semaforoTabaco = new Semaphore(1);
-                semaforoPapel = new Semaphore(1);
-                semaforoCerillas = new Semaphore(0);
-                salida = "Tabaco y papel";
-            } else if ((iNum1 == PAPEL || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == PAPEL)) {
-                semaforoPapel = new Semaphore(1);
-                semaforoCerillas = new Semaphore(1);
-                semaforoTabaco = new Semaphore(0);
-                salida = "Cerilla y papel";
-            } else
-                salida = "Sucki Sucki";
-            return salida;
         }
     }
 
@@ -128,29 +98,38 @@ public class B3_P3 {
         }
 
         @Override
-        public void run() {
+        public synchronized void run() {
             setiCerilla(numAleatorio(0, 4));
             setiPapel(numAleatorio(0, 4));
             setiTabaco(numAleatorio(0, 4));
+            System.out.println("El estudiante " + getiId() + " se quiere fumar un cigarro. Tiene los siguientes ingredientes, Tabaco: " + getiTabaco() + ", Papel: " + getiPapel() + ", Cerillas: " + getiCerilla() + ".");
             do {
                 setCigarListo(false);
                 try {
-                    System.out.println("El estudiante " + getiId() + " se quiere fumar un cigarro. Tiene los siguientes ingredientes, Tabaco: " + getiTabaco() + ", Papel: " + getiPapel() + ", Cerillas: " + getiCerilla() + ".");
 
                     if (getiTabaco() == 0) {
-                        control.semaforoTabaco.acquire();
-                        System.out.println("\tEl estudiante " + getiId() + " ha cogido tabaco.");
-                        setiTabaco(getiTabaco() + 1);
+                        if (control.semaforoTabaco.availablePermits() != 0) {
+                            control.semaforoTabaco.acquire();
+                            System.out.println("\tEl estudiante " + getiId() + " ha cogido tabaco.");
+                            setiTabaco(getiTabaco() + 1);
+                            System.out.println("El estudiante " + getiId() + " tiene los siguientes ingredientes, Tabaco: " + getiTabaco() + ", Papel: " + getiPapel() + ", Cerillas: " + getiCerilla() + ".");
+                        }
                     }
                     if (getiPapel() == 0) {
-                        control.semaforoPapel.acquire();
-                        System.out.println("\tEl estudiante " + getiId() + " ha cogido papel.");
-                        setiPapel(getiPapel() + 1);
+                        if (control.semaforoPapel.availablePermits() != 0) {
+                            control.semaforoPapel.acquire();
+                            System.out.println("\tEl estudiante " + getiId() + " ha cogido papel.");
+                            setiPapel(getiPapel() + 1);
+                            System.out.println("El estudiante " + getiId() + " tiene los siguientes ingredientes, Tabaco: " + getiTabaco() + ", Papel: " + getiPapel() + ", Cerillas: " + getiCerilla() + ".");
+                        }
                     }
                     if (getiCerilla() == 0) {
-                        control.semaforoCerillas.acquire();
-                        System.out.println("\tEl estudiante " + getiId() + " ha cogido cerillas.");
-                        setiCerilla(getiCerilla() + 1);
+                        if (control.semaforoCerillas.availablePermits() != 0) {
+                            control.semaforoCerillas.acquire();
+                            System.out.println("\tEl estudiante " + getiId() + " ha cogido cerillas.");
+                            setiCerilla(getiCerilla() + 1);
+                            System.out.println("El estudiante " + getiId() + " tiene los siguientes ingredientes, Tabaco: " + getiTabaco() + ", Papel: " + getiPapel() + ", Cerillas: " + getiCerilla() + ".");
+                        }
                     }
 
                     if (getiTabaco() > 0 && getiCerilla() > 0 && getiPapel() > 0)
@@ -162,25 +141,32 @@ public class B3_P3 {
                         setiPapel(getiPapel() - 1);
                         setiCerilla(getiCerilla() - 1);
                         iCigarsFumados++;
+                        System.out.println("El estudiante " + getiId() + " tiene ahora lo siguiente -> Tabaco: " + getiTabaco() + ", Papel: " + getiPapel() + ", Cerillas: " + getiCerilla() + ".");
                         System.out.println("\tEl estudiante " + getiId() + " se ha fumado " + iCigarsFumados);
                     }
-                    //System.out.println("El estudiante " + getiId() + " se va a dar una vuelta. Dice que ahora vuelve");
-                    //Thread.sleep(1000);
+
+                    Thread.sleep(1500);
 
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             } while (iCigarsFumados < 10);
+            System.err.println("El estudiante " + getiId() + " ya se ha fumado los 10 cigarros.");
         }
     }
 
     public class Malboro implements Runnable {
         @Override
-        public void run() {
+        public synchronized void run() {
             String salida = "";
             do {
                 if (control.semaforoTabaco.availablePermits() == 0 && control.semaforoCerillas.availablePermits() == 0 && control.semaforoPapel.availablePermits() == 0) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     System.out.println("Malboro va a reponer las mesas");
                     int iNum1 = numAleatorio(1, 3);
                     int iNum2 = numAleatorio(1, 3);
@@ -210,9 +196,12 @@ public class B3_P3 {
 
     private void executeMultiThreading() throws InterruptedException {
         new Thread(new Malboro()).start();
+        int iContador = 0;
 
-        for (int i = 0; i < ESTUDIANTES; i++) {
-            new Thread(new Estudiante(i)).start();
+        while (true) {
+            Thread.sleep(5000);
+            new Thread(new Estudiante(iContador)).start();
+            iContador++;
         }
     }
 
