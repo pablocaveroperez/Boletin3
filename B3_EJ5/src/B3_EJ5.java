@@ -8,6 +8,8 @@ public class B3_EJ5 {
         private Semaphore semaforoAscensor = new Semaphore(NUM_ASCENSORES);
         private Semaphore semaforoPlanta = new Semaphore(0);
         private List<Ascensor> ascensores = new ArrayList<>();
+        private boolean bExito = false;
+
 
         public List<Ascensor> getAscensores() {
             return ascensores;
@@ -110,6 +112,7 @@ public class B3_EJ5 {
         private int iId = 0;
         private int iPlantaDestino = 0;
 
+
         public Planta(int iId) {
             this.iId = iId;
         }
@@ -138,7 +141,12 @@ public class B3_EJ5 {
 
             System.out.println("Se pulsa el botón en la planta " + getiId());
 
-            control.semaforoPlanta.release();
+            while(!control.bExito) {
+                control.semaforoPlanta.release();
+
+            }
+
+
         }
 
     }
