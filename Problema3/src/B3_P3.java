@@ -1,17 +1,15 @@
 import java.util.concurrent.Semaphore;
 
 public class B3_P3 {
-    private final byte ESTUDIANTES = 3;
+    private final byte ESTUDIANTES = 10;
     private final byte PAPEL = 1;
     private final byte CERILLA = 2;
     private final byte TABACO = 3;
 
     public class Control {
-        private Semaphore semaforoMalboro = new Semaphore(0);
-        private Semaphore semaforoEstudiante = new Semaphore(0);
-        private Semaphore semaforoTabaco = new Semaphore(1);
-        private Semaphore semaforoPapel = new Semaphore(1);
-        private Semaphore semaforoCerillas = new Semaphore(1);
+        private Semaphore semaforoTabaco = new Semaphore(0);
+        private Semaphore semaforoPapel = new Semaphore(0);
+        private Semaphore semaforoCerillas = new Semaphore(0);
 
         public Semaphore getSemaforoTabaco() {
             return semaforoTabaco;
@@ -37,55 +35,31 @@ public class B3_P3 {
             this.semaforoCerillas = semaforoCerillas;
         }
 
-        public Semaphore getSemaforoMalboro() {
-            return semaforoMalboro;
-        }
-
-        public void setSemaforoMalboro(Semaphore semaforoMalboro) {
-            this.semaforoMalboro = semaforoMalboro;
-        }
-
-        public Semaphore getSemaforoEstudiante() {
-            return semaforoEstudiante;
-        }
-
-        public void setSemaforoEstudiante(Semaphore semaforoEstudiante) {
-            this.semaforoEstudiante = semaforoEstudiante;
-        }
-
-        public String ingredienteToString(int iIngrediente) {
+        public String reponer() throws InterruptedException {
             String salida = null;
-            if (iIngrediente == PAPEL)
-                salida = "Papel";
-            else if (iIngrediente == CERILLA)
-                salida = "Cerilla";
-            else
-                salida = "Tabaco";
-            return salida;
-        }
-
-        public String reponer() {
-            String salida = null;
-            int iNum1 = numAleatorio();
-            int iNum2 = numAleatorio();
+            int iNum1 = numAleatorio(1, 3);
+            int iNum2 = numAleatorio(1, 3);
             while (iNum1 == iNum2) {
-                iNum1 = numAleatorio();
-                iNum2 = numAleatorio();
+                iNum1 = numAleatorio(1, 3);
+                iNum2 = numAleatorio(1, 3);
             }
 
             if ((iNum1 == TABACO || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == TABACO)) {
-                semaforoTabaco.release();
-                semaforoCerillas.release();
+                semaforoTabaco = new Semaphore(1);
+                semaforoCerillas = new Semaphore(1);
+                semaforoPapel = new Semaphore(0);
                 salida = "Tabaco y cerillas";
-            }else if ((iNum1 == TABACO || iNum1 == PAPEL) && (iNum2 == PAPEL || iNum2 == TABACO)) {
-                semaforoTabaco.release();
-                semaforoPapel.release();
+            } else if ((iNum1 == TABACO || iNum1 == PAPEL) && (iNum2 == PAPEL || iNum2 == TABACO)) {
+                semaforoTabaco = new Semaphore(1);
+                semaforoPapel = new Semaphore(1);
+                semaforoCerillas = new Semaphore(0);
                 salida = "Tabaco y papel";
-            }else if ((iNum1 == PAPEL || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == PAPEL)) {
-                semaforoPapel.release();
-                semaforoCerillas.release();
+            } else if ((iNum1 == PAPEL || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == PAPEL)) {
+                semaforoPapel = new Semaphore(1);
+                semaforoCerillas = new Semaphore(1);
+                semaforoTabaco = new Semaphore(0);
                 salida = "Cerilla y papel";
-            }else
+            } else
                 salida = "Sucki Sucki";
             return salida;
         }
@@ -94,14 +68,39 @@ public class B3_P3 {
     private final Control control = new Control();
 
     public class Estudiante implements Runnable {
-        private int iIngrediente;
+        private int iTabaco;
+        private int iPapel;
+        private int iCerilla;
         private int iId;
         private int iCigarsFumados = 0;
         private boolean cigarListo = false;
 
-        public Estudiante(int iId, int iIngrediente) {
+        public Estudiante(int iId) {
             setiId(iId);
-            setiIngrediente(iIngrediente);
+        }
+
+        public int getiTabaco() {
+            return iTabaco;
+        }
+
+        public void setiTabaco(int iTabaco) {
+            this.iTabaco = iTabaco;
+        }
+
+        public int getiPapel() {
+            return iPapel;
+        }
+
+        public void setiPapel(int iPapel) {
+            this.iPapel = iPapel;
+        }
+
+        public int getiCerilla() {
+            return iCerilla;
+        }
+
+        public void setiCerilla(int iCerilla) {
+            this.iCerilla = iCerilla;
         }
 
         public int getiCigarsFumados() {
@@ -120,14 +119,6 @@ public class B3_P3 {
             this.cigarListo = cigarListo;
         }
 
-        public int getiIngrediente() {
-            return iIngrediente;
-        }
-
-        public void setiIngrediente(int iIngrediente) {
-            this.iIngrediente = iIngrediente;
-        }
-
         public int getiId() {
             return iId;
         }
@@ -138,70 +129,82 @@ public class B3_P3 {
 
         @Override
         public void run() {
+            setiCerilla(numAleatorio(0, 4));
+            setiPapel(numAleatorio(0, 4));
+            setiTabaco(numAleatorio(0, 4));
             do {
                 setCigarListo(false);
                 try {
-                    control.semaforoMalboro.acquire();
+                    System.out.println("El estudiante " + getiId() + " se quiere fumar un cigarro. Tiene los siguientes ingredientes, Tabaco: " + getiTabaco() + ", Papel: " + getiPapel() + ", Cerillas: " + getiCerilla() + ".");
 
-                    control.semaforoEstudiante.acquire();
-                    System.out.println("El estudiante " + getiId() + " se quiere fumar un cigarro. Tiene el siguiente ingrediente: " + control.ingredienteToString(getiIngrediente()));
-
-                    if (getiIngrediente() == TABACO) {
-                        control.semaforoPapel.acquire();
-                        System.out.println("El estudiante " + getiId() + " ha cogido papel.");
-                        control.semaforoCerillas.acquire();
-                        System.out.println("El estudiante " + getiId() + " ha cogido cerillas.");
-                        setCigarListo(true);
-                    }else if (getiIngrediente() == PAPEL) {
-                        control.semaforoCerillas.acquire();
-                        System.out.println("El estudiante " + getiId() + " ha cogido cerilla.");
+                    if (getiTabaco() == 0) {
                         control.semaforoTabaco.acquire();
-                        System.out.println("El estudiante " + getiId() + " ha cogido tabaco.");
-                        setCigarListo(true);
-                    }else if (getiIngrediente() == CERILLA) {
-                        control.semaforoPapel.acquire();
-                        System.out.println("El estudiante " + getiId() + " ha cogido papel.");
-                        control.semaforoTabaco.acquire();
-                        System.out.println("El estudiante " + getiId() + " ha cogido tabaco.");
-                        setCigarListo(true);
+                        System.out.println("\tEl estudiante " + getiId() + " ha cogido tabaco.");
+                        setiTabaco(getiTabaco() + 1);
                     }
+                    if (getiPapel() == 0) {
+                        control.semaforoPapel.acquire();
+                        System.out.println("\tEl estudiante " + getiId() + " ha cogido papel.");
+                        setiPapel(getiPapel() + 1);
+                    }
+                    if (getiCerilla() == 0) {
+                        control.semaforoCerillas.acquire();
+                        System.out.println("\tEl estudiante " + getiId() + " ha cogido cerillas.");
+                        setiCerilla(getiCerilla() + 1);
+                    }
+
+                    if (getiTabaco() > 0 && getiCerilla() > 0 && getiPapel() > 0)
+                        cigarListo = true;
 
                     if (cigarListo) {
-                        System.out.println("El estudiante " + getiId() + " se va a fumar un cigar.");
+                        System.out.println("\t\tEl estudiante " + getiId() + " se va a fumar un cigar.");
+                        setiTabaco(getiTabaco() - 1);
+                        setiPapel(getiPapel() - 1);
+                        setiCerilla(getiCerilla() - 1);
                         iCigarsFumados++;
+                        System.out.println("\tEl estudiante " + getiId() + " se ha fumado " + iCigarsFumados);
                     }
-                    System.out.println("El estudiante " + getiId() + " se va a dar una vuelta. Dice que ahora vuelve");
-                    Thread.sleep(5000);
+                    //System.out.println("El estudiante " + getiId() + " se va a dar una vuelta. Dice que ahora vuelve");
+                    //Thread.sleep(1000);
 
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }while(iCigarsFumados < 10);
+            } while (iCigarsFumados < 10);
         }
     }
 
     public class Malboro implements Runnable {
         @Override
         public void run() {
-            System.out.println("Malboro ha puesto en las mesas los siguientes ingredientes: " + control.reponer());
+            String salida = "";
             do {
-
-                control.semaforoMalboro.release();
-
-
-
-                control.semaforoEstudiante.release();
-
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (control.semaforoTabaco.availablePermits() == 0 && control.semaforoCerillas.availablePermits() == 0 && control.semaforoPapel.availablePermits() == 0) {
+                    System.out.println("Malboro va a reponer las mesas");
+                    int iNum1 = numAleatorio(1, 3);
+                    int iNum2 = numAleatorio(1, 3);
+                    while (iNum1 == iNum2) {
+                        iNum1 = numAleatorio(1, 3);
+                        iNum2 = numAleatorio(1, 3);
+                    }
+                    if ((iNum1 == TABACO || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == TABACO)) {
+                        control.semaforoTabaco.release();
+                        control.semaforoCerillas.release();
+                        salida = "Tabaco y cerillas";
+                    } else if ((iNum1 == TABACO || iNum1 == PAPEL) && (iNum2 == PAPEL || iNum2 == TABACO)) {
+                        control.semaforoTabaco.release();
+                        control.semaforoPapel.release();
+                        salida = "Tabaco y papel";
+                    } else if ((iNum1 == PAPEL || iNum1 == CERILLA) && (iNum2 == CERILLA || iNum2 == PAPEL)) {
+                        control.semaforoPapel.release();
+                        control.semaforoCerillas.release();
+                        salida = "Cerilla y papel";
+                    }
+                    System.out.println("Malboro ha puesto en las mesas los siguientes ingredientes: " + salida);
                 }
 
-                System.out.println("Malboro ha puesto en las mesas los siguientes ingredientes: " + control.reponer());
-
-            }while(true);
+            } while (true);
         }
     }
 
@@ -209,8 +212,7 @@ public class B3_P3 {
         new Thread(new Malboro()).start();
 
         for (int i = 0; i < ESTUDIANTES; i++) {
-            int iAleatorio = numAleatorio();
-            new Thread(new Estudiante(i, iAleatorio)).start();
+            new Thread(new Estudiante(i)).start();
         }
     }
 
@@ -223,7 +225,7 @@ public class B3_P3 {
         }
     }
 
-    private int numAleatorio() {
-        return (int) (1 + Math.random() * 3);
+    private int numAleatorio(int iMin, int iMax) {
+        return (int) (iMin + Math.random() * iMax);
     }
 }
