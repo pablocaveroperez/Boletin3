@@ -7,10 +7,6 @@ public class B3_P3 {
         private Semaphore semaforoMalboro = new Semaphore(0);
         private Semaphore semaforoEstudiante = new Semaphore(0);
         private volatile int iIngrediente;
-        private volatile int iTabaco;
-        private volatile int iPapel;
-        private volatile int iCerillas;
-
         public Semaphore getSemaforoMalboro() {
             return semaforoMalboro;
         }
@@ -34,30 +30,6 @@ public class B3_P3 {
         public void setiIngrediente(int iIngrediente) {
             this.iIngrediente = iIngrediente;
         }
-
-        public int getiTabaco() {
-            return iTabaco;
-        }
-
-        public void setiTabaco(int iTabaco) {
-            this.iTabaco = iTabaco;
-        }
-
-        public int getiPapel() {
-            return iPapel;
-        }
-
-        public void setiPapel(int iPapel) {
-            this.iPapel = iPapel;
-        }
-
-        public int getiCerillas() {
-            return iCerillas;
-        }
-
-        public void setiCerillas(int iCerillas) {
-            this.iCerillas = iCerillas;
-        }
     }
 
     private final Control control = new Control();
@@ -66,8 +38,9 @@ public class B3_P3 {
         private int iIngrediente;
         private int iId;
 
-        public Estudiante(int iId) {
+        public Estudiante(int iId, int iIngrediente) {
             setiId(iId);
+            setiIngrediente(iIngrediente);
         }
 
         public int getiIngrediente() {
