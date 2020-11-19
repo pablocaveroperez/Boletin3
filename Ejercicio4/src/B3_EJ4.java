@@ -44,7 +44,7 @@ public class B3_EJ4 {
         }
     }
 
-    private Control control = new Control();
+    private final Control control = new Control();
 
     public class Dentista implements Runnable {
 

@@ -50,7 +50,7 @@ public class B3_EJ3 {
         }
     }
 
-    private Control control = new Control();
+    private final Control control = new Control();
 
     public class P1 implements Runnable {
         @Override

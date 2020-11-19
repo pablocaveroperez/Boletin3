@@ -43,7 +43,7 @@ public class B3_P1 {
         }
     }
 
-    private Control control = new Control();
+    private final Control control = new Control();
 
     public class Coche implements Runnable {
         private int iId = 0;

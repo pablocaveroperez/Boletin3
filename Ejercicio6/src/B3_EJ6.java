@@ -42,7 +42,7 @@ public class B3_EJ6 {
         }
     }
 
-    private Control control = new Control();
+    private final Control control = new Control();
 
     /**
      * La variable iTipo que esta en la clase {@link #DamAir}, indica si el Avion es normal o si ees premium
