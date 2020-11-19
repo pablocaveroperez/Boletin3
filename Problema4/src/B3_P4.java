@@ -10,24 +10,6 @@ public class B3_P4 {
     public class Control {
         private Semaphore semaforoBaja = new Semaphore(0);
         private Semaphore semaforoSube = new Semaphore(0);
-        private Queue<Estudiante> colaSube = new LinkedList<Estudiante>();
-        private Queue<Estudiante> colaBaja = new LinkedList<Estudiante>();
-
-        public Queue<Estudiante> getColaSube() {
-            return colaSube;
-        }
-
-        public void setColaSube(Queue<Estudiante> colaSube) {
-            this.colaSube = colaSube;
-        }
-
-        public Queue<Estudiante> getColaBaja() {
-            return colaBaja;
-        }
-
-        public void setColaBaja(Queue<Estudiante> colaBaja) {
-            this.colaBaja = colaBaja;
-        }
 
         public Semaphore getSemaforoBaja() {
             return semaforoBaja;
@@ -78,11 +60,9 @@ public class B3_P4 {
                 setbTrambolico((byte) (Math.random() * 2));
                 if (getbTrambolico() == SUBE) {
                     System.out.println("El estudiante " + getiId() + " esta esperando para subir.");
-                    control.colaSube.add(this);
                     control.semaforoSube.acquire();
                 }else {
                     System.out.println("El estudiante " + getiId() + " esta esperando para bajar.");
-                    control.colaBaja.add(this);
                     control.semaforoBaja.acquire();
                 }
                 System.out.println("El estudiante " + getiId() + " ha salido de la escalera.");
@@ -99,24 +79,22 @@ public class B3_P4 {
             do {
                 try {
                     Thread.sleep(250);
-                    if (control.colaBaja.size() >= PERSONAS_A_LA_VEZ || control.colaSube.isEmpty()) {
-                        int iTamanio = control.colaBaja.size();
-                        int i;
-                        if (control.colaBaja.size() > PERSONAS_A_LA_VEZ)
-                            iTamanio = PERSONAS_A_LA_VEZ;
-                        for (i = 0; i < iTamanio; i++)
-                            control.colaBaja.poll();
-                        System.out.println("Han bajado " + iTamanio + " estudiantes.");
-                        control.semaforoBaja.release(iTamanio);
-                    } else if (control.colaSube.size() >= PERSONAS_A_LA_VEZ || control.colaBaja.isEmpty()) {
-                        int iTamanio = control.colaSube.size();
-                        int i;
-                        if (control.colaSube.size() > PERSONAS_A_LA_VEZ)
-                            iTamanio = PERSONAS_A_LA_VEZ;
-                        for (i = 0; i < iTamanio; i++)
-                            control.colaSube.poll();
-                        System.out.println("Han subido " + iTamanio + " estudiantes.");
-                        control.semaforoSube.release(iTamanio);
+                    if (control.semaforoSube.getQueueLength() != 0 && control.semaforoBaja.getQueueLength() != 0) {
+                        if (control.semaforoBaja.getQueueLength() >= PERSONAS_A_LA_VEZ || control.semaforoSube.getQueueLength() == 0) {
+                            int iTamanio = control.semaforoBaja.getQueueLength();
+                            int i;
+                            if (control.semaforoBaja.getQueueLength() > PERSONAS_A_LA_VEZ)
+                                iTamanio = PERSONAS_A_LA_VEZ;
+                            System.out.println("Han bajado " + iTamanio + " estudiantes.");
+                            control.semaforoBaja.release(iTamanio);
+                        } else if (control.semaforoSube.getQueueLength() >= PERSONAS_A_LA_VEZ || control.semaforoBaja.getQueueLength() == 0) {
+                            int iTamanio = control.semaforoSube.getQueueLength();
+                            int i;
+                            if (control.semaforoSube.getQueueLength() > PERSONAS_A_LA_VEZ)
+                                iTamanio = PERSONAS_A_LA_VEZ;
+                            System.out.println("Han subido " + iTamanio + " estudiantes.");
+                            control.semaforoSube.release(iTamanio);
+                        }
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -132,7 +110,7 @@ public class B3_P4 {
 
         while (true) {
             new Thread(new Estudiante(iContador)).start();
-            Thread.sleep(150);
+            Thread.sleep(750);
             iContador++;
         }
     }
