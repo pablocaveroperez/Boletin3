@@ -1,5 +1,4 @@
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.Semaphore;
 
 public class B3_EJ5 {
@@ -8,7 +7,16 @@ public class B3_EJ5 {
     public class Control {
         private Semaphore semaforoAscensor = new Semaphore(NUM_ASCENSORES);
         private Semaphore semaforoPlanta = new Semaphore(0);
-        private Queue<Planta> colaLlamadasAscensor = new LinkedList<Planta>();
+        private Deque<Planta> colaLlamadasAscensor = new LinkedList<Planta>();
+        private List<Ascensor> ascensores = new ArrayList<>();
+
+        public List<Ascensor> getAscensores() {
+            return ascensores;
+        }
+
+        public void setAscensores(List<Ascensor> ascensores) {
+            this.ascensores = ascensores;
+        }
 
         public Semaphore getSemaforoAscensor() {
             return semaforoAscensor;
@@ -26,12 +34,26 @@ public class B3_EJ5 {
             this.semaforoPlanta = semaforoPlanta;
         }
 
-        public Queue<Planta> getColaLlamadasAscensor() {
+        public Deque<Planta> getColaLlamadasAscensor() {
             return colaLlamadasAscensor;
         }
 
-        public void setColaLlamadasAscensor(Queue<Planta> colaLlamadasAscensor) {
+        public void setColaLlamadasAscensor(Deque<Planta> colaLlamadasAscensor) {
             this.colaLlamadasAscensor = colaLlamadasAscensor;
+        }
+
+        public Ascensor ascensorCercano(int iPlanta) {
+            Ascensor ascensor = null;
+
+            for (int i = 0; i < ascensores.size()-1; i++) {
+                if (Math.abs(ascensores.get(i).getiPlanta() - iPlanta) > Math.abs(ascensores.get(i+1).getiPlanta() - iPlanta))
+                    ascensor = ascensores.get(i+1);
+                else if (Math.abs(ascensores.get(i).getiPlanta() - iPlanta) < Math.abs(ascensores.get(i+1).getiPlanta() - iPlanta))
+                    ascensor = ascensores.get(i);
+                else
+                    ascensor = ascensores.get(i);
+            }
+            return ascensor;
         }
     }
 
@@ -39,16 +61,34 @@ public class B3_EJ5 {
 
     public class Ascensor implements Runnable {
         private int iId = 0;
+        private int iPlanta = 0;
 
         public Ascensor(int iId) {
             this.iId = iId;
         }
 
+        public int getiId() {
+            return iId;
+        }
+
+        public void setiId(int iId) {
+            this.iId = iId;
+        }
+
+        public int getiPlanta() {
+            return iPlanta;
+        }
+
+        public void setiPlanta(int iPlanta) {
+            this.iPlanta = iPlanta;
+        }
+
         @Override
         public synchronized void run() {
+            control.ascensores.add(this);
 
             while (true) {
-                System.out.println("El Ascensor " + iId + " está listo para usarse.");
+                System.out.println("El Ascensor " + iId + " está listo para usarse. Esta en la planta " + getiPlanta());
 
                 try {
                     control.semaforoAscensor.acquire();
@@ -68,8 +108,8 @@ public class B3_EJ5 {
                     e.printStackTrace();
                 }
 
-                System.out.println("El ascensor " + iId + " ha quedado libre");
-
+                setiPlanta(iPlanta);
+                System.out.println("El ascensor " + iId + " ha quedado libre en la planta " + getiPlanta());
                 control.semaforoAscensor.release();
             }
         }
@@ -96,7 +136,12 @@ public class B3_EJ5 {
 
             System.out.println("Se pulsa el botón en la planta " + getiId());
 
-            control.colaLlamadasAscensor.add(this);
+            Ascensor ascensor = control.ascensorCercano(getiId());
+
+           if (ascensor != null) {
+               control.colaLlamadasAscensor.offerFirst(this);
+           }else
+               control.colaLlamadasAscensor.add(this);
 
             control.semaforoPlanta.release();
         }
