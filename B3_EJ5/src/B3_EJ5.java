@@ -6,34 +6,32 @@ public class B3_EJ5 {
 
     public class Control {
         private int iPlantas = 15, iAscensores = 4, iContador = 0;
-        private volatile Semaphore seAscensores[] = new Semaphore[iAscensores];
-        private volatile Semaphore sePlantas[] = new Semaphore[iPlantas];
-        private volatile int[] vPlantas = new int[iAscensores];
+        private volatile Semaphore semaforosAscensores[] = new Semaphore[iAscensores];
+        private volatile Semaphore semaforosPlantas[] = new Semaphore[iPlantas];
+        private volatile int[] plantas = new int[iAscensores];
 
         public void rellenarArraySemaforos() {
-            for (int i = 0; i < seAscensores.length; i++) {
-                seAscensores[i] = new Semaphore(1);
+            for (int i = 0; i < semaforosAscensores.length; i++) {
+                semaforosAscensores[i] = new Semaphore(1);
             }
-            for (int i = 0; i < sePlantas.length; i++) {
-                sePlantas[i] = new Semaphore(1);
+            for (int i = 0; i < semaforosPlantas.length; i++) {
+                semaforosPlantas[i] = new Semaphore(1);
             }
         }
 
         public int ascensorCercano(int iPulsador) {
-            int iPlantas = 1000;
             int iAscensor = -1;
 
-            for (int i = 0; i < vPlantas.length; i++) {
-                if (control.seAscensores[i].availablePermits() > 0) {
+            for (int i = 0; i < plantas.length; i++) {
+                if (control.semaforosAscensores[i].availablePermits() > 0) {
                     iAscensor = i;
                 }
             }
 
             for (int i = 3; i >= 0; i--) {
-                if ((Math.abs(vPlantas[i] - iPulsador) <= iPlantas) && control.seAscensores[i].availablePermits() > 0) {
-                    iPlantas = (Math.abs(vPlantas[i] - iPulsador));
+                if ((Math.abs(plantas[i] - iPulsador) <= iPlantas) && control.semaforosAscensores[i].availablePermits() > 0) {
+                    iPlantas = (Math.abs(plantas[i] - iPulsador));
                     iAscensor = i;
-
                 }
             }
             return iAscensor;
@@ -52,7 +50,7 @@ public class B3_EJ5 {
             do {
 
                 iPulsador = (int) (Math.random() * 15 + 0);
-            } while (control.sePlantas[iPulsador].availablePermits() == 0);
+            } while (control.semaforosPlantas[iPulsador].availablePermits() == 0);
 
             int iPlantaDeseada = 0;
             do {
@@ -70,14 +68,14 @@ public class B3_EJ5 {
                 } while (iAscensor == -1);
 
                 System.out.println("El ascensor " + iAscensor + " va a la planta " + iPulsador);
-                control.seAscensores[iAscensor].acquire();
+                control.semaforosAscensores[iAscensor].acquire();
                 Thread.sleep(100);
                 System.err.println("El ascensor mas cercano ha ido a recogerlo (" + iAscensor + ") a la planta " + iPulsador + " para ir a la planta " + iPlantaDeseada);
                 Thread.sleep((long) Math.abs(iPulsador - iPlantaDeseada) * 500);
 
-                control.sePlantas[iPulsador].release();
-                control.vPlantas[iAscensor] = iPlantaDeseada;
-                control.seAscensores[iAscensor].release();
+                control.semaforosPlantas[iPulsador].release();
+                control.plantas[iAscensor] = iPlantaDeseada;
+                control.semaforosAscensores[iAscensor].release();
                 System.out.println(ANSI_BLUE + "\tEl ascensor " + iAscensor + " ha quedado libre en la planta " + iPlantaDeseada + "  " + ANSI_RESET);
 
             } catch (InterruptedException e) {
@@ -105,7 +103,7 @@ public class B3_EJ5 {
         public void run() {
             control.iContador++;
             int iPlanta = (int) (Math.random() * 15 + 0);
-            control.vPlantas[idAscensor] = iPlanta;
+            control.plantas[idAscensor] = iPlanta;
             System.out.println("El ascensor " + idAscensor + " esta listo en la planta " + iPlanta);
         }
 
