@@ -2,167 +2,152 @@ import java.util.*;
 import java.util.concurrent.Semaphore;
 
 public class B3_EJ5 {
-    private final int NUM_ASCENSORES = 4;
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLUE = "\u001B[34m";
 
     public class Control {
-        private Semaphore semaforoAscensor = new Semaphore(NUM_ASCENSORES);
-        private Semaphore semaforoPlanta = new Semaphore(0);
-        private List<Ascensor> ascensores = new ArrayList<>();
-        private boolean bExito = false;
+        private int iPlantas = 15, iAscensores = 4, iContador = 0;;
+        private double dResultado, dArriba, dAbajo;
+        private volatile Semaphore seAscensores[] = new Semaphore[iAscensores];
+        private volatile Semaphore sePlantas[] = new Semaphore[iPlantas];
+        private volatile int[] vPlantas = new int[iAscensores];
 
-
-        public List<Ascensor> getAscensores() {
-            return ascensores;
-        }
-
-        public void setAscensores(List<Ascensor> ascensores) {
-            this.ascensores = ascensores;
-        }
-
-        public Semaphore getSemaforoAscensor() {
-            return semaforoAscensor;
-        }
-
-        public void setSemaforoAscensor(Semaphore semaforoAscensor) {
-            this.semaforoAscensor = semaforoAscensor;
-        }
-
-        public Semaphore getSemaforoPlanta() {
-            return semaforoPlanta;
-        }
-
-        public void setSemaforoPlanta(Semaphore semaforoPlanta) {
-            this.semaforoPlanta = semaforoPlanta;
-        }
-
-        public Ascensor ascensorCercano(int iPlanta) {
-            Ascensor ascensor = null;
-
-            for (int i = 0; i < ascensores.size()-1; i++) {
-                if (Math.abs(ascensores.get(i).getiPlanta() - iPlanta) > Math.abs(ascensores.get(i+1).getiPlanta() - iPlanta))
-                    ascensor = ascensores.get(i+1);
-                else if (Math.abs(ascensores.get(i).getiPlanta() - iPlanta) < Math.abs(ascensores.get(i+1).getiPlanta() - iPlanta))
-                    ascensor = ascensores.get(i);
-                else
-                    ascensor = ascensores.get(i);
+        public void rellenarArraySemaforos() {
+            for (int i = 0; i < seAscensores.length; i++) {
+                seAscensores[i] = new Semaphore(1);
             }
-            return ascensor;
+            for (int i = 0; i < sePlantas.length; i++) {
+                sePlantas[i] = new Semaphore(1);
+            }
         }
+
+        public int ascensorCercano(int iPulsador) {
+
+            int iPlantas = 1000;
+            int iAscensor = -1;
+
+            for (int i = 0; i < vPlantas.length; i++) {
+                if (c.seAscensores[i].availablePermits() > 0) {
+                    iAscensor = i;
+
+                }
+            }
+
+            for (int i = 3; i >= 0; i--) {
+                if ((Math.abs(vPlantas[i] - iPulsador) <= iPlantas) && c.seAscensores[i].availablePermits() > 0) {
+                    iPlantas = (Math.abs(vPlantas[i] - iPulsador));
+                    iAscensor = i;
+
+                }
+            }
+
+            return iAscensor;
+        }
+
     }
 
-    private final Control control = new Control();
+    private final Control c = new Control();
 
-    public class Ascensor implements Runnable {
-        private int iId = 0;
-        private int iPlanta = 0;
-
-        public Ascensor(int iId) {
-            this.iId = iId;
-        }
-
-        public int getiId() {
-            return iId;
-        }
-
-        public void setiId(int iId) {
-            this.iId = iId;
-        }
-
-        public int getiPlanta() {
-            return iPlanta;
-        }
-
-        public void setiPlanta(int iPlanta) {
-            this.iPlanta = iPlanta;
-        }
+    public class Pulsador implements Runnable {
 
         @Override
-        public synchronized void run() {
-            control.ascensores.add(this);
+        public void run() {
 
-            while (true) {
-                System.out.println("El Ascensor " + iId + " está listo para usarse. Esta en la planta " + getiPlanta());
+            int iPulsador = 0;
+            do {
 
-                try {
-                    control.semaforoAscensor.acquire();
-                    control.semaforoPlanta.acquire();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                iPulsador = (int) (Math.random() * 15 + 0);
+            } while (c.sePlantas[iPulsador].availablePermits() == 0);
 
+            int iPlantaDeseada = 0;
+            do {
+                iPlantaDeseada = (int) (Math.random() * 15 + 0);
+            } while (iPulsador == iPlantaDeseada);
 
-                System.out.println("Se ha llamado al ascensor " + iId + " desde la planta " + iPlanta);
-                System.out.println("El ascensor " + iId + " está ocupado");
+            System.out.println("El pulsador de la planta " + iPulsador + " ha sido activado para ir a la planta "
+                    + iPlantaDeseada);
 
-                try {
-                    Thread.sleep((int) ((Math.random() * 7) * 1000));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            try {
+                System.out.println("La persona de la planta " + iPulsador + " esta esperando al ascensor");
+                int iAscensor = 0;
+                do {
+                    iAscensor = c.ascensorCercano(iPulsador);
+                } while (iAscensor == -1);
 
-                setiPlanta(iPlanta);
-                System.out.println("El ascensor " + iId + " ha quedado libre en la planta " + getiPlanta());
-                control.semaforoAscensor.release();
+                System.out.println("El ascensor " + iAscensor + " va a la planta " + iPulsador);
+                c.seAscensores[iAscensor].acquire();
+                Thread.sleep(100);
+                System.err.println("El ascensor mas cercano ha ido a recogerlo (" + iAscensor + ") a la planta " + iPulsador + " para ir a la planta " + iPlantaDeseada);
+                Thread.sleep((long) Math.abs(iPulsador - iPlantaDeseada) * 500);
+//				Thread.sleep(2000);
+                c.sePlantas[iPulsador].release();
+                c.vPlantas[iAscensor] = iPlantaDeseada;
+                c.seAscensores[iAscensor].release();
+                System.out.println(ANSI_BLUE + "\tEl ascensor " + iAscensor + " ha quedado libre en la planta " + iPlantaDeseada + "  " + ANSI_RESET);
+
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
+
         }
+
     }
 
-    public class Planta implements Runnable {
-        private int iPlantaOrigen = 0;
-        private int iPlantaDestino = 0;
+    public class Ascensor implements Runnable {
+        int idAscensor;
 
-        public Planta(int iPlantaOrigen) {
-            this.iPlantaOrigen = iPlantaOrigen;
+        public Ascensor(int idAscensor) {
+            setIdAscensor(idAscensor);
         }
 
-        public int getiPlantaOrigen() {
-            return iPlantaOrigen;
+        public int getIdAscensor() {
+            return idAscensor;
         }
 
-        public void setiPlantaOrigen(int iPlantaOrigen) {
-            this.iPlantaOrigen = iPlantaOrigen;
-        }
-
-        public int getiPlantaDestino() {
-            return iPlantaDestino;
-        }
-
-        public void setiPlantaDestino(int iPlantaDestino) {
-            this.iPlantaDestino = iPlantaDestino;
+        public void setIdAscensor(int idAscensor) {
+            this.idAscensor = idAscensor;
         }
 
         @Override
         public void run() {
-            int iAleatorio = (int) (Math.random() *15);
-            while (iAleatorio == getiPlantaOrigen())
-                setiPlantaDestino(iAleatorio);
+            c.iContador++;
+            int iPlanta = (int) (Math.random() * 15 + 0);
+            c.vPlantas[idAscensor] = iPlanta;
+            System.out.println("El ascensor " + idAscensor + " esta listo en la planta " + iPlanta);
 
-            System.out.println("Se pulsa el botón en la planta " + getiPlantaOrigen());
-
-            while(!control.bExito) {
-                control.semaforoPlanta.release();
-            }
-        }
-    }
-
-    private void executeMultiThreading() throws InterruptedException {
-        for (int i = 0; i < NUM_ASCENSORES; i++) {
-            new Thread(new Ascensor(i)).start();
         }
 
-        while (true) {
-            int iId = (int) (Math.random() * 15);
-            Thread.sleep(2000);
-            new Thread(new Planta(iId)).start();
-        }
     }
 
     public static void main(String[] args) {
+
         try {
-            B3_EJ5 b3Ej5 = new B3_EJ5();
-            b3Ej5.executeMultiThreading();
+            B3_EJ5 principal = new B3_EJ5();
+            principal.executeMultiThreading();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+
+    }
+
+    private void executeMultiThreading() throws InterruptedException {
+        List<Thread> listaThreadPersona = new ArrayList<Thread>();
+        List<Thread> listaThreadPlato = new ArrayList<Thread>();
+        int x = 0;
+        c.rellenarArraySemaforos();
+
+        for (int i = 0; i < c.iAscensores; i++) {
+            listaThreadPlato.add(new Thread(new Ascensor(i)));
+            listaThreadPlato.get(i).start();
+        }
+        while (true) {
+            Thread.sleep(1000);
+            listaThreadPersona.add(new Thread(new Pulsador()));
+            listaThreadPersona.get(x).start();
+            x++;
+
+        }
+
     }
 }
