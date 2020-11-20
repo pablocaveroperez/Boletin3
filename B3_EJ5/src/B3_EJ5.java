@@ -36,7 +36,6 @@ public class B3_EJ5 {
             }
             return iAscensor;
         }
-
     }
 
     private final Control control = new Control();
@@ -57,8 +56,7 @@ public class B3_EJ5 {
                 iPlantaDeseada = (int) (Math.random() * 15 + 0);
             } while (iPulsador == iPlantaDeseada);
 
-            System.out.println("El pulsador de la planta " + iPulsador + " ha sido activado para ir a la planta "
-                    + iPlantaDeseada);
+            System.out.println("El pulsador de la planta " + iPulsador + " ha sido activado para ir a la planta " + iPlantaDeseada);
 
             try {
                 System.out.println("La persona de la planta " + iPulsador + " esta esperando al ascensor");
@@ -106,11 +104,9 @@ public class B3_EJ5 {
             control.plantas[idAscensor] = iPlanta;
             System.out.println("El ascensor " + idAscensor + " esta listo en la planta " + iPlanta);
         }
-
     }
 
     private void executeMultiThreading() throws InterruptedException {
-        int iContador = 0;
         control.rellenarArraySemaforos();
 
         for (int i = 0; i < control.iAscensores; i++) {
