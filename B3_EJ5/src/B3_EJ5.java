@@ -108,21 +108,19 @@ public class B3_EJ5 {
     }
 
     public class Planta implements Runnable {
-
-        private int iId = 0;
+        private int iPlantaOrigen = 0;
         private int iPlantaDestino = 0;
 
-
-        public Planta(int iId) {
-            this.iId = iId;
+        public Planta(int iPlantaOrigen) {
+            this.iPlantaOrigen = iPlantaOrigen;
         }
 
-        public int getiId() {
-            return iId;
+        public int getiPlantaOrigen() {
+            return iPlantaOrigen;
         }
 
-        public void setiId(int iId) {
-            this.iId = iId;
+        public void setiPlantaOrigen(int iPlantaOrigen) {
+            this.iPlantaOrigen = iPlantaOrigen;
         }
 
         public int getiPlantaDestino() {
@@ -136,23 +134,18 @@ public class B3_EJ5 {
         @Override
         public void run() {
             int iAleatorio = (int) (Math.random() *15);
-            while (iAleatorio == getiId())
+            while (iAleatorio == getiPlantaOrigen())
                 setiPlantaDestino(iAleatorio);
 
-            System.out.println("Se pulsa el botón en la planta " + getiId());
+            System.out.println("Se pulsa el botón en la planta " + getiPlantaOrigen());
 
             while(!control.bExito) {
                 control.semaforoPlanta.release();
-
             }
-
-
         }
-
     }
 
     private void executeMultiThreading() throws InterruptedException {
-
         for (int i = 0; i < NUM_ASCENSORES; i++) {
             new Thread(new Ascensor(i)).start();
         }
@@ -162,11 +155,9 @@ public class B3_EJ5 {
             Thread.sleep(2000);
             new Thread(new Planta(iId)).start();
         }
-
     }
 
     public static void main(String[] args) {
-
         try {
             B3_EJ5 b3Ej5 = new B3_EJ5();
             b3Ej5.executeMultiThreading();
@@ -174,5 +165,4 @@ public class B3_EJ5 {
             System.out.println(e.getMessage());
         }
     }
-
 }
